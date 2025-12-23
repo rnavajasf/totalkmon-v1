@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Totalkmon - The Experience</title>
+    <title>Totalkmon - El Juicio de Osiris</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root {
@@ -16,9 +16,9 @@
             --gold-glow: #ffbf00;
             --gold-muted: #c5a059;
             --text-main: #f0f0f0;
-            --card-glass: rgba(20, 20, 30, 0.7);
+            --card-glass: rgba(20, 20, 30, 0.85);
             --red: #FF4757;
-            --blue: #2ED573;
+            --green: #2ED573;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -32,98 +32,73 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* --- PARTÍCULAS --- */
-        .particles { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            pointer-events: none; z-index: 0; 
-        }
-        .particle { 
-            position: absolute; background: var(--gold-glow); border-radius: 50%; 
-            opacity: 0.4; box-shadow: 0 0 10px var(--gold-glow); 
-            animation: float 15s infinite linear; 
-        }
-        @keyframes float { 
-            0% { transform: translateY(110vh) translateX(0); opacity: 0; } 
-            100% { transform: translateY(-10vh) translateX(20px); opacity: 0; } 
-        }
-
-        /* --- UI (Encima de partículas) --- */
-        header, .tabs, .main-stage, .footer-action { z-index: 10; position: relative; }
+        /* PARTÍCULAS */
+        .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .particle { position: absolute; background: var(--gold-glow); border-radius: 50%; opacity: 0.4; box-shadow: 0 0 10px var(--gold-glow); animation: float 15s infinite linear; }
+        @keyframes float { 0% { transform: translateY(110vh) translateX(0); opacity: 0; } 100% { transform: translateY(-10vh) translateX(20px); opacity: 0; } }
 
         /* HEADER */
-        header { margin-top: 30px; text-align: center; margin-bottom: 20px; }
-        .logo-container { width: 70px; height: 70px; margin: 0 auto 10px; filter: drop-shadow(0 0 15px rgba(255, 191, 0, 0.3)); transition: transform 0.5s ease; }
-        .logo-container:hover { transform: scale(1.1) rotate(5deg); }
-        h1 { font-family: 'Cinzel', serif; font-size: 2.5rem; letter-spacing: 3px; background: linear-gradient(to bottom, #fff, var(--gold-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .tagline { font-size: 0.8rem; letter-spacing: 2px; color: var(--gold-muted); text-transform: uppercase; }
-
+        header { margin-top: 20px; text-align: center; margin-bottom: 15px; z-index: 10; }
+        .logo-container { width: 60px; height: 60px; margin: 0 auto 10px; filter: drop-shadow(0 0 15px rgba(255, 191, 0, 0.3)); }
+        h1 { font-family: 'Cinzel', serif; font-size: 2rem; letter-spacing: 2px; background: linear-gradient(to bottom, #fff, var(--gold-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
         /* TABS */
-        .tabs { display: flex; gap: 10px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 50px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
-        .tab { padding: 10px 25px; border-radius: 40px; cursor: pointer; opacity: 0.6; transition: 0.3s; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .tab.active { background: var(--gold-glow); color: var(--bg-deep); opacity: 1; font-weight: 800; box-shadow: 0 0 15px rgba(255, 191, 0, 0.3); }
+        .tabs { display: flex; gap: 8px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 50px; margin-bottom: 20px; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
+        .tab { padding: 10px 20px; border-radius: 40px; cursor: pointer; opacity: 0.6; transition: 0.3s; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .tab.active { background: var(--gold-glow); color: var(--bg-deep); opacity: 1; box-shadow: 0 0 15px rgba(255, 191, 0, 0.3); }
 
-        /* STAGE */
-        .main-stage { width: 100%; max-width: 550px; padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; min-height: 450px; }
-
-        /* TARJETAS */
-        #oracle-section { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        /* ZONA PRINCIPAL */
+        .main-stage { width: 100%; max-width: 500px; padding: 20px; flex-grow: 1; z-index: 10; position: relative; min-height: 500px; }
+        
+        /* TARJETA GENERICA */
         .card { 
-            width: 100%; background: var(--card-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 191, 0, 0.2); border-radius: 30px; padding: 50px 30px;
-            text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; position: relative;
-            margin-bottom: 30px; min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--card-glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 191, 0, 0.3); border-radius: 25px; padding: 40px 25px;
+            text-align: center; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s ease; position: relative;
+            min-height: 320px; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .category-pill { display: inline-block; padding: 6px 15px; border-radius: 50px; background: rgba(255, 191, 0, 0.1); color: var(--gold-glow); border: 1px solid var(--gold-glow); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
-        .question-content { font-size: 1.6rem; font-weight: 400; line-height: 1.4; }
-        .hint { margin-top: 30px; font-size: 0.75rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* BOTONES CATEGORÍAS */
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
-        .btn-mode { 
-            background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
-            padding: 10px 20px; border-radius: 12px; cursor: pointer; font-family: 'Montserrat', sans-serif;
-            font-weight: 600; font-size: 0.8rem; transition: 0.3s; text-transform: uppercase;
-        }
-        .btn-mode:hover, .btn-mode.active { background: var(--gold-glow); color: var(--bg-deep); border-color: var(--gold-glow); box-shadow: 0 0 15px rgba(255, 191, 0, 0.3); }
-
-        /* DILEMA */
-        #clash-section { display: none; width: 100%; animation: fadeIn 0.5s; }
+        /* MODOS */
+        #oracle-section, #clash-section, #judgment-section { display: none; animation: fadeIn 0.4s; width: 100%; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .clash-card { display: flex; flex-direction: column; gap: 15px; }
-        .option-btn { 
-            position: relative; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-            padding: 25px; border-radius: 15px; cursor: pointer; font-size: 1.1rem; font-weight: 600;
-            overflow: hidden; transition: 0.3s; min-height: 80px; display: flex; align-items: center; justify-content: space-between;
+
+        /* ESTILOS ORÁCULO */
+        .category-pill { padding: 5px 15px; border-radius: 50px; border: 1px solid var(--gold-glow); color: var(--gold-glow); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 1px; }
+        .question-content { font-size: 1.5rem; line-height: 1.4; font-weight: 500; }
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        .btn-mode { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 10px; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; }
+        .btn-mode.active { background: var(--gold-glow); color: black; border-color: var(--gold-glow); font-weight: bold; }
+
+        /* ESTILOS JUICIO (NUEVO) */
+        .judge-badge { background: var(--red); color: white; padding: 5px 15px; border-radius: 5px; font-family: 'Cinzel', serif; font-size: 0.8rem; margin-bottom: 20px; }
+        .judge-controls { display: flex; gap: 20px; margin-top: 30px; width: 100%; justify-content: center; }
+        .btn-judge { 
+            width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 1.5rem; 
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
         }
-        .progress-bar { position: absolute; top: 0; left: 0; height: 100%; opacity: 0.15; width: 0%; transition: width 1s ease-out; z-index: 0; }
-        .opt-text { position: relative; z-index: 2; text-align: left; width: 80%; }
-        .opt-percent { position: relative; z-index: 2; font-weight: 800; font-size: 1.2rem; opacity: 0; transition: 0.3s; }
-        .opt-a .progress-bar { background: var(--red); }
-        .opt-b .progress-bar { background: var(--blue); }
+        .btn-approve { background: rgba(46, 213, 115, 0.2); color: var(--green); border: 2px solid var(--green); }
+        .btn-reject { background: rgba(255, 71, 87, 0.2); color: var(--red); border: 2px solid var(--red); }
+        .btn-judge:hover { transform: scale(1.1); box-shadow: 0 0 15px currentColor; }
+        
+        /* ESTILOS DILEMA */
+        .option-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 20px; border-radius: 15px; margin-bottom: 10px; position: relative; overflow: hidden; cursor: pointer; }
+        .progress-bar { position: absolute; top: 0; left: 0; height: 100%; opacity: 0.2; width: 0%; transition: width 0.5s; }
+        .opt-a .progress-bar { background: var(--red); } .opt-b .progress-bar { background: var(--green); }
+        .opt-text { position: relative; z-index: 2; }
+        .opt-percent { float: right; font-weight: bold; position: relative; z-index: 2; opacity: 0; }
         .voted .opt-percent { opacity: 1; }
 
         /* MODAL */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; 
-            display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; 
-        }
-        .modal-content { 
-            background: var(--bg-accent); border: 1px solid var(--gold-muted); padding: 40px; 
-            border-radius: 20px; max-width: 400px; width: 90%; text-align: center; position: relative; 
-            box-shadow: 0 0 50px rgba(255, 191, 0, 0.2); 
-        }
-        .close-modal { position: absolute; top: 15px; right: 20px; color: #fff; cursor: pointer; font-size: 1.5rem; }
-        .btn-submit { display: inline-block; margin-top: 20px; background: var(--gold-glow); color: var(--bg-deep); padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: none; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-accent); padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--gold-muted); }
+        input, textarea, select { width: 100%; padding: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.3); border: 1px solid #555; color: white; border-radius: 5px; }
+        .btn-submit { background: var(--gold-glow); color: black; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* FOOTER */
-        .footer-action { margin-bottom: 20px; text-align: center; }
-        .link-suggest { color: var(--gold-muted); font-size: 0.8rem; text-decoration: none; border-bottom: 1px dotted var(--gold-muted); cursor: pointer; opacity: 0.7; }
-
+        .footer-action { margin-bottom: 20px; z-index: 10; }
+        .link-suggest { color: var(--gold-muted); font-size: 0.8rem; text-decoration: none; border-bottom: 1px dotted var(--gold-muted); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -132,185 +107,239 @@
 
     <header>
         <div class="logo-container">
-            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 95C74.8528 95 95 74.8528 95 50C95 25.1472 74.8528 5 50 5C25.1472 5 5 25.1472 5 50C5 74.8528 25.1472 95 50 95Z" stroke="#FFBF00" stroke-width="2"/>
-                <path d="M50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85Z" fill="#FFBF00" fill-opacity="0.1"/>
-                <circle cx="50" cy="50" r="10" fill="#FFBF00"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v19"/><path d="M5 8h14"/><path d="M5 8a3 3 0 0 1-3 3v4a3 3 0 0 0 6 0v-4a3 3 0 0 1-3-3z"/><path d="M19 8a3 3 0 0 1-3 3v4a3 3 0 0 0 6 0v-4a3 3 0 0 1-3-3z"/></svg>
         </div>
         <h1>Totalkmon</h1>
-        <p class="tagline">El Oráculo de la Conversación</p>
+        <p style="font-size: 0.7rem; letter-spacing: 2px; color: #aaa; text-transform: uppercase;">El Juicio de Osiris</p>
     </header>
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('oracle', this)">Oráculo</div>
-        <div class="tab" onclick="switchTab('clash', this)">Dilema Diario</div>
+        <div class="tab" onclick="switchTab('judgment', this)">Juicio ⚖️</div>
+        <div class="tab" onclick="switchTab('clash', this)">Dilema</div>
     </div>
 
     <div class="main-stage">
-        <div id="oracle-section">
+        
+        <div id="oracle-section" style="display: block;">
             <div class="card" onclick="nextQuestion()">
                 <span class="category-pill" id="q-cat">Bienvenida</span>
                 <p class="question-content" id="q-text">Invocando temas...</p>
-                <p class="hint">Toca la carta para nueva pregunta</p>
+                <p style="margin-top:20px; font-size:0.7rem; opacity:0.5;">(Toca para siguiente)</p>
             </div>
             <div class="controls">
-                <button class="btn-mode active" onclick="setCategory('aleatorio', event)">Aleatorio</button>
+                <button class="btn-mode active" onclick="setCategory('aleatorio', event)">Mix</button>
                 <button class="btn-mode" onclick="setCategory('Cita', event)">Cita</button>
                 <button class="btn-mode" onclick="setCategory('Fiesta', event)">Fiesta</button>
                 <button class="btn-mode" onclick="setCategory('Profundo', event)">Profundo</button>
             </div>
         </div>
 
-        <div id="clash-section">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h3 style="color: var(--gold-glow); font-family:'Cinzel', serif;">¿De qué lado estás?</h3>
+        <div id="judgment-section">
+            <div class="card">
+                <div class="judge-badge">Purgatorio</div>
+                <p class="question-content" id="judge-text">Buscando almas perdidas...</p>
+                <span id="judge-cat" style="font-size: 0.8rem; color: var(--gold-muted); margin-top: 10px;">...</span>
+                
+                <div class="judge-controls">
+                    <button class="btn-judge btn-reject" onclick="voteJudgment(-1)"><i class="fas fa-times"></i></button>
+                    <button class="btn-judge btn-approve" onclick="voteJudgment(1)"><i class="fas fa-check"></i></button>
+                </div>
+                <p style="font-size: 0.7rem; margin-top: 20px; opacity: 0.6;">Si apruebas, subirá al Oráculo.</p>
             </div>
-            <div class="clash-card" id="clash-container">
-                <div class="option-btn opt-a" onclick="vote('a')">
+        </div>
+
+        <div id="clash-section">
+            <h3 style="text-align: center; color: var(--gold-glow); font-family:'Cinzel',serif; margin-bottom:20px;">Estadísticas Mundiales</h3>
+            <div id="clash-container">
+                <div class="option-btn opt-a" onclick="voteClash('a')">
                     <div class="progress-bar" id="bar-a"></div>
                     <span class="opt-text" id="text-a">Cargando...</span>
                     <span class="opt-percent" id="perc-a">0%</span>
                 </div>
-                <div class="option-btn opt-b" onclick="vote('b')">
+                <div class="option-btn opt-b" onclick="voteClash('b')">
                     <div class="progress-bar" id="bar-b"></div>
                     <span class="opt-text" id="text-b">Cargando...</span>
                     <span class="opt-percent" id="perc-b">0%</span>
                 </div>
             </div>
         </div>
+
     </div>
 
     <div class="footer-action">
-        <a class="link-suggest" onclick="openModal()">¿Tienes una buena pregunta? Añádela al oráculo</a>
+        <a class="link-suggest" onclick="openModal()">+ Enviar Ofrenda al Purgatorio</a>
     </div>
 
     <div class="modal-overlay" id="suggestionModal">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h3 style="color: var(--gold-glow); font-family:'Cinzel', serif;">Ofrenda al Oráculo</h3>
-            <p style="margin: 20px 0;">Envía tu tema para que sea juzgado.</p>
-            <a href="mailto:tuemail@totalkmon.com?subject=Nueva Pregunta" class="btn-submit">Enviar</a>
+            <span style="position:absolute; top:10px; right:20px; font-size:1.5rem; cursor:pointer;" onclick="closeModal()">&times;</span>
+            <h3 style="color:var(--gold-glow); font-family:'Cinzel', serif; margin-bottom:20px;">Crear Pregunta</h3>
+            <select id="sug-cat">
+                <option value="Aleatorio">General</option>
+                <option value="Cita">Cita</option>
+                <option value="Fiesta">Fiesta</option>
+                <option value="Profundo">Profundo</option>
+            </select>
+            <textarea id="sug-text" rows="4" placeholder="Escribe tu pregunta..."></textarea>
+            <button class="btn-submit" onclick="sendSuggestion()">Enviar al Juicio</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURACIÓN DE CONEXIÓN ---
-        // HE PUESTO TU URL AUTOMÁTICAMENTE.
-        // SOLO TIENES QUE PEGAR TU CLAVE LARGA ENTRE LAS COMILLAS DONDE PONE 'PEGAR_AQUI...'
-        
+        // --- PEGA TUS CLAVES AQUÍ ---
         const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
-        
-        // --- NO TOQUES NADA MÁS ABAJO ---
+
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentClashId = null;
-        let currentCategory = 'aleatorio';
+        // ESTADO
         let allQuestions = [];
+        let currentCategory = 'aleatorio';
+        let currentJudgeId = null;
+        let currentClashId = null;
 
+        // --- 1. ORÁCULO ---
         async function fetchQuestions() {
-            try {
-                const { data, error } = await db.from('questions').select('*');
-                if (data && data.length > 0) allQuestions = data;
-                else throw new Error("Vacio");
-            } catch (e) {
-                allQuestions = [
-                    {text: "¿Qué es lo que la gente malinterpreta más de ti?", category: "Profundo"},
-                    {text: "¿Tu anécdota más vergonzosa?", category: "Fiesta"},
-                    {text: "¿Vivir sin música o sin series?", category: "Cita"}
-                ];
-            }
+            // Cargar preguntas OFICIALES
+            const { data } = await db.from('questions').select('*');
+            if(data) allQuestions = data;
             nextQuestion();
         }
 
         function nextQuestion() {
-            const card = document.querySelector('.card');
-            card.style.transform = "scale(0.95)"; card.style.opacity = "0.7";
-            setTimeout(() => {
-                let pool = allQuestions;
-                if (currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
-                if (pool.length === 0) pool = allQuestions;
-                const random = pool[Math.floor(Math.random() * pool.length)];
-                document.getElementById('q-text').innerText = random.text;
-                document.getElementById('q-cat').innerText = random.category;
-                card.style.transform = "scale(1)"; card.style.opacity = "1";
-            }, 200);
+            let pool = allQuestions;
+            if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
+            if(pool.length === 0) pool = allQuestions.length > 0 ? allQuestions : [{text:"Base de datos vacía", category:"Error"}];
+            
+            const random = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('q-text').innerText = random.text;
+            document.getElementById('q-cat').innerText = random.category;
         }
 
-        function setCategory(cat, event) {
+        function setCategory(cat, e) {
             currentCategory = cat;
             document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-            if(event) event.target.classList.add('active');
+            if(e) e.target.classList.add('active');
             nextQuestion();
         }
 
+        // --- 2. EL JUICIO DE OSIRIS (MODERACIÓN) ---
+        async function fetchJudge() {
+            // Cargar UNA sugerencia aleatoria
+            const { data } = await db.from('suggestions').select('*').limit(10); // Traemos 10 para variar
+            
+            if (data && data.length > 0) {
+                const random = data[Math.floor(Math.random() * data.length)];
+                currentJudgeId = random.id;
+                document.getElementById('judge-text').innerText = random.text;
+                document.getElementById('judge-cat').innerText = "Categoría propuesta: " + random.category;
+            } else {
+                document.getElementById('judge-text').innerText = "El Purgatorio está vacío.";
+                document.getElementById('judge-cat').innerText = "¡Vuelve más tarde!";
+                currentJudgeId = null;
+            }
+        }
+
+        async function voteJudgment(value) {
+            if(!currentJudgeId) return;
+
+            // Optimistic UI (Cambio visual inmediato)
+            document.getElementById('judge-text').innerText = "Juzgando...";
+            
+            // 1. Obtener datos actuales
+            const { data: current } = await db.from('suggestions').select('*').eq('id', currentJudgeId).single();
+            if(!current) { fetchJudge(); return; }
+
+            let newVotes = (current.votes || 0) + value;
+
+            // 2. LÓGICA DE ASCENSIÓN (Si llega a 5 votos, se promueve)
+            if (newVotes >= 3) { // Ponemos 3 para que sea fácil probar ahora
+                // Insertar en preguntas oficiales
+                await db.from('questions').insert([{ text: current.text, category: current.category }]);
+                // Borrar de sugerencias
+                await db.from('suggestions').delete().eq('id', currentJudgeId);
+                alert("¡ASCENSIÓN! Esta pregunta ha sido aprobada por los dioses (la comunidad).");
+            } else if (newVotes <= -3) {
+                // Borrar si es muy odiada
+                await db.from('suggestions').delete().eq('id', currentJudgeId);
+            } else {
+                // Solo actualizar votos
+                await db.from('suggestions').update({ votes: newVotes }).eq('id', currentJudgeId);
+            }
+
+            // Cargar siguiente
+            setTimeout(fetchJudge, 500);
+        }
+
+        // --- 3. DILEMA ---
         async function loadClash() {
             const { data } = await db.from('clashes').select('*').order('id', { ascending: false }).limit(1);
-            if (data && data.length > 0) {
-                const clash = data[0];
-                currentClashId = clash.id;
-                document.getElementById('text-a').innerText = clash.option_a;
-                document.getElementById('text-b').innerText = clash.option_b;
-                if(localStorage.getItem('voted_clash_' + clash.id)) showResults(clash.votes_a, clash.votes_b);
+            if(data && data.length > 0) {
+                const c = data[0];
+                currentClashId = c.id;
+                document.getElementById('text-a').innerText = c.option_a;
+                document.getElementById('text-b').innerText = c.option_b;
+                if(localStorage.getItem('voted_'+c.id)) showResults(c.votes_a, c.votes_b);
             }
         }
-
-        async function vote(option) {
-            if (!currentClashId || localStorage.getItem('voted_clash_' + currentClashId)) return;
+        async function voteClash(opt) {
+            if(!currentClashId || localStorage.getItem('voted_'+currentClashId)) return;
             document.getElementById('clash-container').classList.add('voted');
-            const { data: currentData } = await db.from('clashes').select('*').eq('id', currentClashId).single();
-            let newA = currentData.votes_a; let newB = currentData.votes_b;
-            if (option === 'a') newA++; else newB++;
-            showResults(newA, newB);
-            await db.from('clashes').update({ votes_a: newA, votes_b: newB }).eq('id', currentClashId);
-            localStorage.setItem('voted_clash_' + currentClashId, 'true');
+            const { data } = await db.from('clashes').select('*').eq('id', currentClashId).single();
+            let a = data.votes_a, b = data.votes_b;
+            if(opt === 'a') a++; else b++;
+            showResults(a, b);
+            await db.from('clashes').update({ votes_a: a, votes_b: b }).eq('id', currentClashId);
+            localStorage.setItem('voted_'+currentClashId, 'true');
         }
-
-        function showResults(votesA, votesB) {
+        function showResults(a, b) {
             document.getElementById('clash-container').classList.add('voted');
-            const total = votesA + votesB;
-            const perA = total === 0 ? 0 : Math.round((votesA / total) * 100);
-            const perB = total === 0 ? 0 : Math.round((votesB / total) * 100);
-            document.getElementById('bar-a').style.width = perA + '%';
-            document.getElementById('bar-b').style.width = perB + '%';
-            document.getElementById('perc-a').innerText = perA + '%';
-            document.getElementById('perc-b').innerText = perB + '%';
+            let t = a + b;
+            let pa = t===0?0:Math.round((a/t)*100), pb = t===0?0:Math.round((b/t)*100);
+            document.getElementById('bar-a').style.width = pa+'%';
+            document.getElementById('bar-b').style.width = pb+'%';
+            document.getElementById('perc-a').innerText = pa+'%';
+            document.getElementById('perc-b').innerText = pb+'%';
         }
 
-        function switchTab(mode, btn) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            if (mode === 'oracle') {
-                document.getElementById('oracle-section').style.display = 'flex';
-                document.getElementById('clash-section').style.display = 'none';
-            } else {
-                document.getElementById('oracle-section').style.display = 'none';
-                document.getElementById('clash-section').style.display = 'block';
-                loadClash();
-            }
+        // --- COMUNIDAD ---
+        async function sendSuggestion() {
+            const txt = document.getElementById('sug-text').value;
+            const cat = document.getElementById('sug-cat').value;
+            if(!txt) return;
+            await db.from('suggestions').insert([{ text: txt, category: cat, votes: 0 }]);
+            alert("Tu ofrenda está en el Purgatorio esperando juicio.");
+            closeModal();
+            document.getElementById('sug-text').value = "";
         }
 
-        function openModal() { document.getElementById('suggestionModal').style.display = 'flex'; setTimeout(() => { document.getElementById('suggestionModal').style.opacity = '1'; }, 10); }
-        function closeModal() { document.getElementById('suggestionModal').style.opacity = '0'; setTimeout(() => { document.getElementById('suggestionModal').style.display = 'none'; }, 300); }
-        window.onclick = function(event) { if (event.target == document.getElementById('suggestionModal')) closeModal(); }
-
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 25; i++) {
-                let p = document.createElement('div');
-                p.classList.add('particle');
-                p.style.left = Math.random() * 100 + '%';
-                let size = Math.random() * 6 + 2;
-                p.style.width = size + 'px'; p.style.height = size + 'px';
-                p.style.animationDelay = Math.random() * 5 + 's';
-                p.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                container.appendChild(p);
-            }
+        // UI
+        function switchTab(t, el) {
+            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('oracle-section').style.display = 'none';
+            document.getElementById('judgment-section').style.display = 'none';
+            document.getElementById('clash-section').style.display = 'none';
+            
+            if(t==='oracle') document.getElementById('oracle-section').style.display = 'block';
+            if(t==='judgment') { document.getElementById('judgment-section').style.display = 'block'; fetchJudge(); }
+            if(t==='clash') { document.getElementById('clash-section').style.display = 'block'; loadClash(); }
+        }
+        function openModal() { document.getElementById('suggestionModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('suggestionModal').style.display = 'none'; }
+        
+        // PARTICULAS
+        const pc = document.getElementById('particles');
+        for(let i=0;i<20;i++){
+            let p=document.createElement('div'); p.className='particle';
+            p.style.left=Math.random()*100+'%'; p.style.width=p.style.height=(Math.random()*6+2)+'px';
+            p.style.animationDelay=Math.random()*5+'s'; p.style.animationDuration=(Math.random()*10+10)+'s';
+            pc.appendChild(p);
         }
 
-        createParticles();
+        // INIT
         fetchQuestions();
     </script>
 </body>
