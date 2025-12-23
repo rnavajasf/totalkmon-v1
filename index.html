@@ -46,7 +46,7 @@
         h1 { font-family: 'Cinzel', serif; font-size: 2.5rem; letter-spacing: 3px; background: linear-gradient(to bottom, #fff, var(--gold-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .tagline { font-size: 0.8rem; letter-spacing: 3px; color: var(--gold-muted); text-transform: uppercase; }
 
-        /* TABS SUPERIORES (SOLO JUEGOS) */
+        /* TABS SUPERIORES */
         .tabs { display: flex; gap: 15px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 50px; margin-bottom: 20px; z-index: 10; border: 1px solid rgba(255,255,255,0.1); }
         .tab { padding: 10px 25px; border-radius: 40px; cursor: pointer; opacity: 0.6; transition: 0.3s; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
         .tab.active { background: var(--gold-glow); color: var(--bg-deep); opacity: 1; box-shadow: 0 0 15px rgba(255, 191, 0, 0.3); }
@@ -54,7 +54,6 @@
         /* ZONA PRINCIPAL */
         .main-stage { width: 100%; max-width: 550px; padding: 20px; flex-grow: 1; z-index: 10; position: relative; display: flex; flex-direction: column; justify-content: flex-start; }
         
-        /* TARJETA GENÉRICA */
         .card { 
             background: var(--card-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 191, 0, 0.3); border-radius: 30px; padding: 40px 30px;
@@ -63,46 +62,45 @@
             min-height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* SECCIONES */
         #oracle-section, #clash-section, #judgment-section { display: none; animation: fadeIn 0.4s; width: 100%; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ESTILOS ORÁCULO */
+        /* ORÁCULO */
         .category-pill { padding: 6px 18px; border-radius: 50px; border: 1px solid var(--gold-glow); color: var(--gold-glow); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 25px; letter-spacing: 1.5px; background: rgba(255, 191, 0, 0.05); }
         .question-content { font-size: 1.7rem; line-height: 1.4; font-weight: 400; margin-bottom: 20px;}
         .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 30px; width: 100%; }
         .btn-mode { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); padding: 10px 20px; border-radius: 12px; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; font-weight: 600;}
         .btn-mode:hover, .btn-mode.active { background: var(--gold-glow); color: var(--bg-deep); border-color: var(--gold-glow); box-shadow: 0 0 15px rgba(255, 191, 0, 0.3); }
 
-        /* ESTILOS JUICIO */
-        .judgment-header { margin-bottom: 20px; text-align: center; }
+        /* JUICIO */
         .judge-badge { background: var(--red); color: white; padding: 5px 15px; border-radius: 5px; font-family: 'Cinzel', serif; font-size: 0.8rem; margin-bottom: 20px; display: inline-block; }
         .btn-judge { width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; margin: 0 15px; }
         .btn-approve { background: rgba(46, 213, 115, 0.1); color: var(--green); border: 2px solid var(--green); }
         .btn-reject { background: rgba(255, 71, 87, 0.1); color: var(--red); border: 2px solid var(--red); }
         .btn-judge:hover { transform: scale(1.1); box-shadow: 0 0 20px currentColor; }
 
-        /* ESTILOS DILEMA */
+        /* DILEMA */
         .option-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 15px; margin-bottom: 15px; position: relative; overflow: hidden; cursor: pointer; min-height: 80px; display: flex; align-items: center; }
         .progress-bar { position: absolute; top: 0; left: 0; height: 100%; opacity: 0.2; width: 0%; transition: width 0.8s ease-out; }
         .opt-a .progress-bar { background: var(--red); } .opt-b .progress-bar { background: var(--green); }
         .opt-text { position: relative; z-index: 2; width: 85%; text-align: left; }
         .opt-percent { position: absolute; right: 20px; font-weight: 800; font-size: 1.2rem; z-index: 2; opacity: 0; }
         .voted .opt-percent { opacity: 1; }
+        
+        /* BOTÓN COMPARTIR */
+        .share-btn {
+            margin-top: 20px; background: transparent; border: 1px solid var(--gold-muted); color: var(--gold-muted);
+            padding: 10px 20px; border-radius: 50px; font-size: 0.8rem; cursor: pointer; transition: 0.3s;
+            display: none; /* Se activa al votar */
+            align-items: center; gap: 8px; margin-left: auto; margin-right: auto;
+        }
+        .share-btn:hover { background: var(--gold-glow); color: var(--bg-deep); border-color: var(--gold-glow); }
+        .voted .share-btn { display: flex; }
 
-        /* FOOTER COMUNIDAD (NUEVO DISEÑO) */
-        .community-bar {
-            width: 100%; max-width: 500px; margin-bottom: 30px; z-index: 10;
-            display: flex; gap: 15px; padding: 0 20px;
-        }
-        .comm-btn {
-            flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 191, 0, 0.3);
-            color: var(--gold-muted); padding: 15px; border-radius: 12px;
-            font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
-            cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
+        /* FOOTER COMUNIDAD */
+        .community-bar { width: 100%; max-width: 500px; margin-bottom: 30px; z-index: 10; display: flex; gap: 15px; padding: 0 20px; }
+        .comm-btn { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 191, 0, 0.3); color: var(--gold-muted); padding: 15px; border-radius: 12px; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .comm-btn:hover { background: rgba(255, 191, 0, 0.1); color: var(--gold-glow); border-color: var(--gold-glow); transform: translateY(-2px); }
-        .comm-btn i { font-size: 1rem; }
 
         /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
@@ -164,6 +162,9 @@
                     <span class="opt-text" id="text-b">Cargando...</span>
                     <span class="opt-percent" id="perc-b">0%</span>
                 </div>
+                <button class="share-btn" onclick="shareClash()">
+                    <i class="fas fa-share-alt"></i> Desafiar a amigos
+                </button>
             </div>
         </div>
 
@@ -172,194 +173,26 @@
                 <h2 style="font-family:'Cinzel', serif; color: var(--gold-glow); font-size: 1.5rem;">El Juicio de Osiris</h2>
                 <p style="font-size: 0.8rem; opacity: 0.7;">Tú decides qué preguntas merecen entrar.</p>
             </div>
-            
             <div class="card" style="min-height: 250px;">
                 <div class="judge-badge">Purgatorio</div>
                 <p class="question-content" id="judge-text" style="font-size: 1.4rem;">Buscando almas...</p>
                 <span id="judge-cat" style="font-size: 0.8rem; color: var(--gold-muted);">...</span>
-                
                 <div style="display: flex; gap: 20px; margin-top: 30px; justify-content: center; width: 100%;">
                     <button class="btn-judge btn-reject" onclick="voteJudgment(-1)"><i class="fas fa-times"></i></button>
                     <button class="btn-judge btn-approve" onclick="voteJudgment(1)"><i class="fas fa-check"></i></button>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="community-bar">
-        <button class="comm-btn" onclick="openModal()">
-            <i class="fas fa-pen-nib"></i> Proponer Tema
-        </button>
-        <button class="comm-btn" onclick="switchTab('judgment')">
-            <i class="fas fa-balance-scale"></i> Moderar
-        </button>
+        <button class="comm-btn" onclick="openModal()"><i class="fas fa-pen-nib"></i> Proponer Tema</button>
+        <button class="comm-btn" onclick="switchTab('judgment')"><i class="fas fa-balance-scale"></i> Moderar</button>
     </div>
 
     <div class="modal-overlay" id="suggestionModal">
         <div class="modal-content">
             <span style="position:absolute; top:15px; right:20px; font-size:1.5rem; cursor:pointer; color:white;" onclick="closeModal()">&times;</span>
             <h3 style="color:var(--gold-glow); font-family:'Cinzel', serif; margin-bottom:20px;">Ofrenda al Oráculo</h3>
-            <select id="sug-cat">
-                <option value="Aleatorio">General</option>
-                <option value="Cita">Cita</option>
-                <option value="Fiesta">Fiesta</option>
-                <option value="Profundo">Profundo</option>
-            </select>
-            <textarea id="sug-text" rows="4" placeholder="Escribe tu pregunta aquí..."></textarea>
-            <button class="btn-submit" onclick="sendSuggestion()">Enviar</button>
-        </div>
-    </div>
-
-    <script>
-        // --- PEGA TUS CLAVES AQUÍ ---
-        const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
-
-        const { createClient } = supabase;
-        const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // ESTADO
-        let allQuestions = [];
-        let currentCategory = 'aleatorio';
-        let currentJudgeId = null;
-        let currentClashId = null;
-
-        // --- ORÁCULO ---
-        async function fetchQuestions() {
-            const { data } = await db.from('questions').select('*');
-            if(data && data.length > 0) allQuestions = data;
-            else allQuestions = [{text: "Bienvenido. Toca para empezar.", category: "Inicio"}];
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            let pool = allQuestions;
-            if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
-            if(pool.length === 0) pool = allQuestions;
-            
-            const random = pool[Math.floor(Math.random() * pool.length)];
-            document.getElementById('q-text').innerText = random.text;
-            document.getElementById('q-cat').innerText = random.category;
-        }
-
-        function setCategory(cat, e) {
-            currentCategory = cat;
-            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-            if(e) e.target.classList.add('active');
-            nextQuestion();
-        }
-
-        // --- JUICIO (MODERACIÓN) ---
-        async function fetchJudge() {
-            const { data } = await db.from('suggestions').select('*').limit(5);
-            if (data && data.length > 0) {
-                const random = data[Math.floor(Math.random() * data.length)];
-                currentJudgeId = random.id;
-                document.getElementById('judge-text').innerText = random.text;
-                document.getElementById('judge-cat').innerText = random.category;
-            } else {
-                document.getElementById('judge-text').innerText = "El Purgatorio está vacío.";
-                document.getElementById('judge-cat').innerText = "";
-                currentJudgeId = null;
-            }
-        }
-
-        async function voteJudgment(value) {
-            if(!currentJudgeId) return;
-            document.getElementById('judge-text').innerText = "Juzgando...";
-            const { data: current } = await db.from('suggestions').select('*').eq('id', currentJudgeId).single();
-            if(!current) { fetchJudge(); return; }
-
-            let newVotes = (current.votes || 0) + value;
-            
-            if (newVotes >= 5) { // Ascensión
-                await db.from('questions').insert([{ text: current.text, category: current.category }]);
-                await db.from('suggestions').delete().eq('id', currentJudgeId);
-            } else if (newVotes <= -5) { // Eliminación
-                await db.from('suggestions').delete().eq('id', currentJudgeId);
-            } else {
-                await db.from('suggestions').update({ votes: newVotes }).eq('id', currentJudgeId);
-            }
-            setTimeout(fetchJudge, 300);
-        }
-
-        // --- DILEMA ---
-        async function loadClash() {
-            const { data } = await db.from('clashes').select('*').order('id', { ascending: false }).limit(1);
-            if(data && data.length > 0) {
-                const c = data[0];
-                currentClashId = c.id;
-                document.getElementById('text-a').innerText = c.option_a;
-                document.getElementById('text-b').innerText = c.option_b;
-                if(localStorage.getItem('voted_'+c.id)) showResults(c.votes_a, c.votes_b);
-            }
-        }
-        async function voteClash(opt) {
-            if(!currentClashId || localStorage.getItem('voted_'+currentClashId)) return;
-            const { data } = await db.from('clashes').select('*').eq('id', currentClashId).single();
-            let a = data.votes_a, b = data.votes_b;
-            if(opt === 'a') a++; else b++;
-            showResults(a, b);
-            await db.from('clashes').update({ votes_a: a, votes_b: b }).eq('id', currentClashId);
-            localStorage.setItem('voted_'+currentClashId, 'true');
-        }
-        function showResults(a, b) {
-            let t = a + b;
-            let pa = t===0?0:Math.round((a/t)*100), pb = t===0?0:Math.round((b/t)*100);
-            document.getElementById('bar-a').style.width = pa+'%'; document.getElementById('bar-b').style.width = pb+'%';
-            document.getElementById('perc-a').innerText = pa+'%'; document.getElementById('perc-b').innerText = pb+'%';
-            document.getElementById('clash-container').classList.add('voted');
-        }
-
-        // --- UI ---
-        async function sendSuggestion() {
-            const txt = document.getElementById('sug-text').value;
-            const cat = document.getElementById('sug-cat').value;
-            if(!txt) return;
-            await db.from('suggestions').insert([{ text: txt, category: cat, votes: 0 }]);
-            alert("Ofrenda enviada.");
-            closeModal();
-            document.getElementById('sug-text').value = "";
-        }
-
-        function switchTab(t, el) {
-            // Reset Tabs Superiores
-            document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            if(el) el.classList.add('active');
-            else if(t==='oracle') document.getElementById('tab-oracle').classList.add('active');
-            else if(t==='clash') document.getElementById('tab-clash').classList.add('active');
-
-            // Ocultar todo
-            document.getElementById('oracle-section').style.display = 'none';
-            document.getElementById('clash-section').style.display = 'none';
-            document.getElementById('judgment-section').style.display = 'none';
-            
-            // Mostrar selección
-            if(t==='oracle') document.getElementById('oracle-section').style.display = 'block';
-            if(t==='clash') { document.getElementById('clash-section').style.display = 'block'; loadClash(); }
-            if(t==='judgment') { 
-                document.getElementById('judgment-section').style.display = 'block'; 
-                // Quitar active de los tabs superiores porque estamos en modo juicio
-                document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-                fetchJudge(); 
-            }
-        }
-
-        function openModal() { document.getElementById('suggestionModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('suggestionModal').style.display = 'none'; }
-        
-        // PARTICULAS
-        const pc = document.getElementById('particles');
-        for(let i=0;i<25;i++){
-            let p=document.createElement('div'); p.className='particle';
-            p.style.left=Math.random()*100+'%'; p.style.width=p.style.height=(Math.random()*6+2)+'px';
-            p.style.animationDelay=Math.random()*5+'s'; p.style.animationDuration=(Math.random()*10+10)+'s';
-            pc.appendChild(p);
-        }
-
-        // INIT
-        fetchQuestions();
-    </script>
-</body>
-</html>
+            <select id="sug-cat"><option value="Aleatorio">General</option><option value="Cita">Cita</option><option value="Fiesta">Fiesta</option><option value="Profundo">Profundo</option></select>
+            <textarea id="sug
