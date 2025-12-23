@@ -8,118 +8,140 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050a14">
     
-    <title>Totalkmon - Official</title>
+    <title>Totalkmon</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
     <div class="particles" id="particles"></div>
 
-    <header onclick="switchTab('oracle'); playSfx('click');">
+    <header onclick="playSfx('click')">
         <div class="logo-container">
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 95C74.8528 95 95 74.8528 95 50C95 25.1472 74.8528 5 50 5C25.1472 5 5 25.1472 5 50C5 74.8528 25.1472 95 50 95Z" stroke="#FFBF00" stroke-width="2"/>
                 <path d="M50 85C69.33 85 85 69.33 85 50C85 30.67 69.33 15 50 15C30.67 15 15 30.67 15 50C15 69.33 30.67 85 50 85Z" fill="#FFBF00" fill-opacity="0.1"/>
-                <path d="M20 50C20 50 33 25 50 25C67 25 80 50 80 50C80 50 67 75 50 75C33 75 20 50 20 50Z" stroke="#FFBF00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
                 <circle cx="50" cy="50" r="9" fill="#FFBF00"/>
+                <path d="M50 25L55 40H45L50 25Z" fill="#FFBF00"/>
             </svg>
         </div>
         <h1>Totalkmon</h1>
-        <p class="tagline">El Oráculo de la Conversación</p>
     </header>
-
-    <nav class="tabs">
-        <div class="tab active" onclick="switchTab('oracle', this)" id="tab-oracle">Oráculo</div>
-        <div class="tab" onclick="switchTab('clash', this)" id="tab-clash">Dilema Diario</div>
-    </nav>
 
     <main class="main-stage">
         
         <section id="oracle-section" class="active-section">
-            <div class="card interactive-card" onclick="nextQuestion(); playSfx('swoosh');">
-                <span class="category-pill" id="q-cat">Bienvenida</span>
-                <div class="content-wrapper">
-                    <p class="question-content" id="q-text">Invocando temas...</p>
-                </div>
-                <p class="hint">(Toca la tarjeta)</p>
-            </div>
             
-            <div class="controls">
-                <button class="btn-mode active" onclick="setCategory('aleatorio', event)">Mix</button>
-                <button class="btn-mode" onclick="setCategory('Cita', event)">Cita</button>
-                <button class="btn-mode" onclick="setCategory('Fiesta', event)">Fiesta</button>
-                <button class="btn-mode" onclick="setCategory('Profundo', event)">Profundo</button>
+            <div class="topic-slider-container">
+                <div class="topic-slider">
+                    <button class="topic-chip active" onclick="setCategory('aleatorio', this)">✨ Mix</button>
+                    <button class="topic-chip" onclick="setCategory('Cita', this)">💘 Cita</button>
+                    <button class="topic-chip" onclick="setCategory('Pareja', this)">👩‍❤️‍👨 Pareja</button>
+                    <button class="topic-chip" onclick="setCategory('Fiesta', this)">🎉 Fiesta</button>
+                    <button class="topic-chip" onclick="setCategory('Picante', this)">🔥 Picante</button>
+                    <button class="topic-chip" onclick="setCategory('Profundo', this)">🌌 Profundo</button>
+                    <button class="topic-chip" onclick="setCategory('Polemico', this)">🤬 Polémico</button>
+                    <button class="topic-chip" onclick="setCategory('Nostalgia', this)">📼 Nostalgia</button>
+                </div>
+            </div>
+
+            <div class="card-container">
+                <div class="card interactive-card" onclick="nextQuestion(); playSfx('swoosh');">
+                    <div class="card-inner">
+                        <span class="category-pill" id="q-cat">Bienvenida</span>
+                        <p class="question-content" id="q-text">Invocando sabiduría...</p>
+                        <p class="hint">Toca para siguiente</p>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="clash-section">
-            <div class="section-header">
-                <h3>Estadísticas Mundiales</h3>
+            <div class="section-title">
+                <h2>Dilema Diario</h2>
+                <p>La humanidad decide</p>
             </div>
-            <div id="clash-container">
+            <div class="clash-wrapper">
                 <div class="option-btn opt-a" onclick="voteClash('a')">
                     <div class="progress-bar" id="bar-a"></div>
                     <span class="opt-text" id="text-a">Cargando...</span>
                     <span class="opt-percent" id="perc-a">0%</span>
                 </div>
+                
+                <div class="vs-badge">VS</div>
+
                 <div class="option-btn opt-b" onclick="voteClash('b')">
                     <div class="progress-bar" id="bar-b"></div>
                     <span class="opt-text" id="text-b">Cargando...</span>
                     <span class="opt-percent" id="perc-b">0%</span>
                 </div>
+                
                 <button class="share-btn" onclick="shareClash()">
-                    <i class="fas fa-share-alt"></i> Desafiar a amigos
+                    <i class="fas fa-share-alt"></i> Desafiar amigos
                 </button>
             </div>
         </section>
 
         <section id="judgment-section">
-            <div class="section-header">
-                <h2>El Juicio de Osiris</h2>
-                <p class="subtitle">Tú decides qué preguntas merecen entrar.</p>
+            <div class="section-title">
+                <h2>El Juicio</h2>
+                <p>Tu voto decide el contenido</p>
             </div>
-            
-            <div class="card judge-card">
-                <div class="judge-badge">Purgatorio</div>
-                <div class="content-wrapper">
+            <div class="card-container">
+                <div class="card judge-card">
+                    <div class="judge-badge">Purgatorio</div>
                     <p class="question-content" id="judge-text">Buscando almas...</p>
-                </div>
-                <span id="judge-cat" class="meta-info">...</span>
-                
-                <div class="judge-actions">
-                    <button class="btn-judge btn-reject" onclick="voteJudgment(-1)"><i class="fas fa-times"></i></button>
-                    <button class="btn-judge btn-approve" onclick="voteJudgment(1)"><i class="fas fa-check"></i></button>
+                    <span id="judge-cat" class="meta-cat">...</span>
+                    
+                    <div class="judge-actions">
+                        <button class="btn-judge btn-reject" onclick="voteJudgment(-1)"><i class="fas fa-times"></i></button>
+                        <button class="btn-judge btn-approve" onclick="voteJudgment(1)"><i class="fas fa-check"></i></button>
+                    </div>
                 </div>
             </div>
         </section>
+
     </main>
 
-    <footer class="community-bar">
-        <button class="comm-btn" onclick="openModal(); playSfx('click');">
-            <i class="fas fa-pen-nib"></i> Proponer Tema
+    <nav class="bottom-dock">
+        <button class="dock-item active" onclick="switchTab('oracle', this)">
+            <i class="fas fa-eye"></i>
+            <span>Oráculo</span>
         </button>
-        <button class="comm-btn" onclick="switchTab('judgment'); playSfx('click');">
-            <i class="fas fa-balance-scale"></i> Moderar
+        <button class="dock-item" onclick="switchTab('clash', this)">
+            <i class="fas fa-balance-scale-right"></i>
+            <span>Dilema</span>
         </button>
-    </footer>
+        <div class="dock-fab" onclick="openModal(); playSfx('click');">
+            <i class="fas fa-plus"></i>
+        </div>
+        <button class="dock-item" onclick="switchTab('judgment', this)">
+            <i class="fas fa-gavel"></i>
+            <span>Juicio</span>
+        </button>
+        <button class="dock-item" style="opacity:0.3;" onclick="alert('Próximamente: Tu Perfil')">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </button>
+    </nav>
 
     <div class="modal-overlay" id="suggestionModal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h3>Ofrenda al Oráculo</h3>
+            <h3>Sugerir Tema</h3>
             <select id="sug-cat">
-                <option value="Aleatorio">General</option>
+                <option value="Aleatorio">Mix</option>
                 <option value="Cita">Cita</option>
+                <option value="Pareja">Pareja</option>
                 <option value="Fiesta">Fiesta</option>
+                <option value="Picante">Picante</option>
                 <option value="Profundo">Profundo</option>
+                <option value="Polemico">Polémico</option>
             </select>
-            <textarea id="sug-text" rows="4" placeholder="Escribe tu pregunta aquí..."></textarea>
+            <textarea id="sug-text" rows="3" placeholder="Escribe tu pregunta..."></textarea>
             <button class="btn-submit" onclick="sendSuggestion()">Enviar</button>
         </div>
     </div>
