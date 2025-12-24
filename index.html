@@ -121,8 +121,8 @@
 
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
                     <h3>🚀 Unirse</h3>
-                    <input type="text" id="join-code" placeholder="Código (ej: X9Z1)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
-                    <button class="btn-submit" onclick="joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar a la sala</button>
+                    <input type="text" id="join-code" placeholder="Código (ej: A1B2)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <button class="btn-submit" onclick="joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
 
@@ -144,11 +144,11 @@
 
                     <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);">
                         <div class="card-inner">
-                            <span class="category-pill" id="versus-topic">TEMA DEL DEBATE</span>
+                            <span class="category-pill" id="versus-topic">DEBATE</span>
                             <h2 class="versus-title" id="versus-main-text">Esperando...</h2>
                             <div class="versus-assignment" id="versus-role-box">
                                 <p style="font-size: 0.8rem; text-transform: uppercase;">Tu misión:</p>
-                                <h3 id="versus-role-text">ESPERANDO ASIGNACIÓN</h3>
+                                <h3 id="versus-role-text">ESPERANDO...</h3>
                             </div>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                             <i class="fas fa-fingerprint" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
                             <span class="category-pill" style="background: #ff0055; color: white;">MISIÓN SECRETA</span>
                             <p class="question-content" id="imposter-role-text" style="filter: blur(5px); cursor: pointer;" onclick="this.style.filter='none'">
-                                Toca para revelar tu rol
+                                Toca para revelar
                             </p>
                             <p class="hint">Mantenlo en secreto</p>
                         </div>
@@ -167,7 +167,7 @@
                 </div>
 
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
-                    <button class="btn-submit" id="btn-next-round" onclick="partyNextRound()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;">
+                    <button class="btn-submit" onclick="partyNextRound()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;">
                         <i class="fas fa-play"></i> Siguiente Ronda
                     </button>
                     <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la partida.</p>
@@ -182,12 +182,12 @@
         <section id="judgment-section">
             <div class="section-title">
                 <h2>El Juicio</h2>
-                <p>Tu voto decide el contenido</p>
+                <p>Tu voto decide</p>
             </div>
             <div class="card-container">
                 <div class="card judge-card">
                     <div class="judge-badge">Purgatorio</div>
-                    <p class="question-content" id="judge-text">Buscando almas...</p>
+                    <p class="question-content" id="judge-text">Buscando...</p>
                     <span id="judge-cat" class="meta-cat">...</span>
                     <div class="judge-actions">
                         <button class="btn-judge btn-reject" onclick="voteJudgment(-1)"><i class="fas fa-times"></i></button>

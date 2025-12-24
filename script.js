@@ -1,11 +1,24 @@
-// CONFIGURACIÓN SUPABASE
+// ==========================================
+// 1. CONFIGURACIÓN Y SEGURIDAD
+// ==========================================
+window.onerror = function(msg, url, line) {
+    alert("Error Detectado: " + msg + "\nLínea: " + line);
+};
+
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
+
+// Verificación de librería
+if (typeof supabase === 'undefined') {
+    alert("Error Crítico: No se pudo cargar Supabase. Comprueba tu conexión.");
+    throw new Error("Supabase undefined");
+}
+
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================
-// DICCIONARIOS LOCALES
+// 2. DICCIONARIOS
 // ==========================================
 const imposterWords = [
     "Hospital", "Cementerio", "Escuela", "Cárcel", "Playa", "Cine", "Discoteca", "Gimnasio", "Biblioteca", "Aeropuerto",
@@ -35,9 +48,16 @@ const debateTopics = [
 ];
 
 // ==========================================
-// ESTADO GLOBAL
+// 3. ESTADO GLOBAL
 // ==========================================
-let currentUser = { id: localStorage.getItem('user_uuid'), name: localStorage.getItem('profile_name')||'Anónimo', avatar: localStorage.getItem('profile_avatar')||'🦊', streak: parseInt(localStorage.getItem('streak')||0), votes: parseInt(localStorage.getItem('profile_votes')||0) };
+let currentUser = {
+    id: localStorage.getItem('user_uuid') || null,
+    name: localStorage.getItem('profile_name') || 'Anónimo',
+    avatar: localStorage.getItem('profile_avatar') || '🦊',
+    streak: parseInt(localStorage.getItem('streak') || 0),
+    votes: parseInt(localStorage.getItem('profile_votes') || 0)
+};
+
 let allQuestions = [];
 let currentCategory = 'aleatorio';
 let currentJudgeId = null;
@@ -51,44 +71,83 @@ let isHost = false;
 let roomSubscription = null;
 let selectedGameMode = 'classic';
 
-// SONIDO
+// ==========================================
+// 4. SONIDO
+// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 function playSfx(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.connect(gain); gain.connect(audioCtx.destination);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
     const now = audioCtx.currentTime;
-    if (type === 'click') { osc.frequency.setValueAtTime(600, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); if(navigator.vibrate) navigator.vibrate(5); } 
-    else if (type === 'swoosh') { osc.type = 'triangle'; gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
-    else if (type === 'success') { [440, 554, 659].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.001, now + 0.5 + (i*0.1)); o.start(now); o.stop(now + 0.5); }); }
+
+    if (type === 'click') {
+        osc.frequency.setValueAtTime(600, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+        if(navigator.vibrate) navigator.vibrate(5);
+    } 
+    else if (type === 'swoosh') {
+        osc.type = 'triangle'; 
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    }
+    else if (type === 'success') { 
+        [440, 554, 659].forEach((f, i) => {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f;
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.5 + (i*0.1));
+            o.start(now); o.stop(now + 0.5);
+        });
+    }
 }
 
 // ==========================================
-// MODO FIESTA (CORE)
+// 5. MODO FIESTA (CORE)
 // ==========================================
 function selectGameMode(mode) {
     playSfx('click');
     selectedGameMode = mode;
     document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
-    document.getElementById('mode-' + mode).classList.add('selected');
+    const btn = document.getElementById('mode-' + mode);
+    if(btn) btn.classList.add('selected');
 }
 
 async function createRoom() {
-    if(!currentUser.id) return alert("Espera a que cargue tu perfil.");
+    if(!currentUser.id) return alert("Espera a que cargue tu perfil (o refresca).");
     playSfx('click');
+    
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "¡Sala Creada!", current_card_category: "Esperando...", gamemode: selectedGameMode });
-    if(error) return alert("Error al crear sala.");
+    const { error } = await db.from('rooms').insert({ 
+        id: code, 
+        host_id: currentUser.id, 
+        current_card_text: "¡Sala Creada!", 
+        current_card_category: "Esperando...",
+        gamemode: selectedGameMode
+    });
+    
+    if(error) {
+        console.error(error);
+        return alert("Error creando sala. Comprueba tu conexión.");
+    }
+    
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
     currentRoomId = code; isHost = true; enterPartyMode(code, selectedGameMode);
 }
 
 async function joinRoom() {
     const code = document.getElementById('join-code').value.toUpperCase().trim();
-    if(code.length !== 4) return alert("Código incorrecto.");
+    if(code.length !== 4) return alert("Código incorrecto (4 letras).");
     playSfx('click');
+    
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
     if(!data) return alert("Sala no encontrada.");
+    
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
     currentRoomId = code; isHost = false; 
     enterPartyMode(code, data.gamemode);
@@ -110,19 +169,29 @@ function enterPartyMode(code, mode) {
         document.getElementById('guest-controls').style.display = 'block'; 
     }
 
+    if(roomSubscription) db.removeChannel(roomSubscription);
     roomSubscription = db.channel('room-'+code)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, (payload) => {
         handleRoomUpdate(payload.new);
     })
     .subscribe();
 
-    if(!isHost) { db.from('rooms').select('*').eq('id', code).single().then(({data}) => { if(data) handleRoomUpdate(data); }); }
+    if(!isHost) { 
+        db.from('rooms').select('*').eq('id', code).single().then(({data}) => { 
+            if(data) handleRoomUpdate(data);
+        });
+    }
 }
 
 function updateGameUI(mode) {
-    document.getElementById('party-card-classic').style.display = mode === 'classic' ? 'flex' : 'none';
-    document.getElementById('party-card-imposter').style.display = mode === 'imposter' ? 'flex' : 'none';
-    document.getElementById('party-card-versus').style.display = mode === 'versus' ? 'flex' : 'none';
+    // Ocultar todos
+    ['classic', 'imposter', 'versus'].forEach(m => {
+        const el = document.getElementById('party-card-' + m);
+        if(el) el.style.display = 'none';
+    });
+    // Mostrar actual
+    const currentEl = document.getElementById('party-card-' + mode);
+    if(currentEl) currentEl.style.display = 'flex';
 }
 
 async function handleRoomUpdate(roomData) {
@@ -139,9 +208,6 @@ async function handleRoomUpdate(roomData) {
         else updateImposterCard(roomData.current_card_text, "Palabra Secreta");
     }
     else if(selectedGameMode === 'versus') {
-        // En versus, usamos current_card_text como JSON string (chapuza rápida pro) o parseamos
-        // Para simplificar, asumimos que 'text' es el Título y 'category' son las opciones separadas por "|"
-        // Pero para hacerlo limpio, usaremos lógica determinista basada en el ID del usuario
         updateVersusCard(roomData.current_card_text, roomData.current_card_category);
     }
 }
@@ -149,40 +215,46 @@ async function handleRoomUpdate(roomData) {
 function updateClassicCard(text, category) {
     const card = document.getElementById('party-card-classic');
     triggerFlash(card);
-    card.querySelector('.card-inner').style.opacity = '0';
+    const inner = card.querySelector('.card-inner');
+    inner.style.opacity = '0';
     setTimeout(() => {
         document.getElementById('party-text').innerText = text;
         document.getElementById('party-cat').innerText = category;
-        card.querySelector('.card-inner').style.opacity = '1';
+        inner.style.opacity = '1';
     }, 200);
 }
 
 function updateImposterCard(mainText, subText) {
     const card = document.getElementById('party-card-imposter');
     triggerFlash(card);
-    document.getElementById('imposter-role-text').innerText = mainText;
-    document.getElementById('imposter-role-text').style.filter = 'blur(15px)';
+    const textEl = document.getElementById('imposter-role-text');
+    textEl.innerText = mainText;
+    textEl.style.filter = 'blur(15px)';
     card.querySelector('.hint').innerText = subText;
 }
 
 function updateVersusCard(title, optionsStr) {
+    // Si no tengo ID, no puedo calcular mi equipo.
+    if(!currentUser.id) return;
+
     const card = document.getElementById('party-card-versus');
     triggerFlash(card);
-    const box = document.getElementById('versus-role-box');
-    const roleText = document.getElementById('versus-role-text');
     
-    // Parse options (formato: "Opción A|Opción B")
     const parts = optionsStr ? optionsStr.split('|') : ["A", "B"];
     const optA = parts[0] || "A";
     const optB = parts[1] || "B";
 
     document.getElementById('versus-main-text').innerText = title;
     
-    // Determinismo: Usamos el ID del usuario para asignar equipo
-    // Sumamos los códigos ASCII del ID para saber si es par o impar
+    // Asignación de equipo determinista
     let sum = 0;
-    for(let i=0; i<currentUser.id.length; i++) sum += currentUser.id.charCodeAt(i);
-    const isTeamA = sum % 2 === 0;
+    for(let i=0; i<currentUser.id.length; i++) {
+        sum += currentUser.id.charCodeAt(i);
+    }
+    const isTeamA = (sum % 2 === 0);
+
+    const box = document.getElementById('versus-role-box');
+    const roleText = document.getElementById('versus-role-text');
 
     box.classList.remove('team-a-style', 'team-b-style');
     if(isTeamA) {
@@ -195,8 +267,9 @@ function updateVersusCard(title, optionsStr) {
 }
 
 function triggerFlash(element) {
+    if(!element) return;
     element.classList.remove('flash-animation');
-    void element.offsetWidth;
+    void element.offsetWidth; // Trigger reflow
     element.classList.add('flash-animation');
     playSfx('swoosh');
     if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
@@ -209,17 +282,31 @@ async function partyNextRound() {
 
     if(selectedGameMode === 'classic') {
         const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
-        await db.from('rooms').update({ current_card_text: random.text, current_card_category: random.category }).eq('id', currentRoomId);
+        await db.from('rooms').update({ 
+            current_card_text: random.text, 
+            current_card_category: random.category 
+        }).eq('id', currentRoomId);
     } 
     else if(selectedGameMode === 'imposter') {
         const secretWord = imposterWords[Math.floor(Math.random() * imposterWords.length)];
+        
         const { data: participants } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
-        let imposter = (!participants || participants.length < 2) ? currentUser.id : participants[Math.floor(Math.random() * participants.length)].user_id;
-        await db.from('rooms').update({ current_card_text: secretWord, imposter_id: imposter, game_state: 'playing' }).eq('id', currentRoomId);
+        
+        let imposter = null;
+        if(!participants || participants.length < 2) {
+             imposter = currentUser.id; 
+        } else {
+            imposter = participants[Math.floor(Math.random() * participants.length)].user_id;
+        }
+        
+        await db.from('rooms').update({
+            current_card_text: secretWord, 
+            imposter_id: imposter,
+            game_state: 'playing'
+        }).eq('id', currentRoomId);
     }
     else if(selectedGameMode === 'versus') {
         const debate = debateTopics[Math.floor(Math.random() * debateTopics.length)];
-        // Guardamos las opciones en el campo 'category' separadas por '|' para enviarlas a los clientes
         await db.from('rooms').update({ 
             current_card_text: debate.title, 
             current_card_category: `${debate.a}|${debate.b}` 
@@ -229,17 +316,24 @@ async function partyNextRound() {
 
 function exitRoom() {
     if(roomSubscription) db.removeChannel(roomSubscription);
-    if(currentRoomId && currentUser.id) { db.from('room_participants').delete().match({ room_id: currentRoomId, user_id: currentUser.id }); }
+    if(currentRoomId && currentUser.id) {
+        db.from('room_participants').delete().match({ room_id: currentRoomId, user_id: currentUser.id });
+    }
     currentRoomId = null; isHost = false;
     document.getElementById('party-lobby').style.display = 'block';
     document.getElementById('party-active').style.display = 'none';
     document.getElementById('join-code').value = "";
 }
 
-// CORE & UTILS
+// ==========================================
+// CORE & UTILS (ADMIN, SHARE, INIT)
+// ==========================================
 function triggerAdminUnlock() {
     adminTapCount++;
-    if (adminTapCount === 5) { if(prompt("🔐 PIN:") === "2025") { alert("CEO Mode."); switchTab('admin'); loadAdminStats(); fetchAdminModeration(); } adminTapCount = 0; }
+    if (adminTapCount === 5) {
+        if(prompt("🔐 PIN:") === "2025") { alert("CEO Mode."); switchTab('admin'); loadAdminStats(); fetchAdminModeration(); }
+        adminTapCount = 0;
+    }
 }
 async function loadAdminStats() {
     const { count: u } = await db.from('profiles').select('*', { count: 'exact', head: true });
@@ -248,7 +342,8 @@ async function loadAdminStats() {
     if(document.getElementById('admin-pending')) document.getElementById('admin-pending').innerText = p||0;
 }
 async function adminCreateClash() {
-    const a = document.getElementById('admin-opt-a').value; const b = document.getElementById('admin-opt-b').value;
+    const a = document.getElementById('admin-opt-a').value;
+    const b = document.getElementById('admin-opt-b').value;
     if(!a || !b) return alert("Rellena todo.");
     const tom = new Date(); tom.setDate(tom.getDate() + 1); const d = tom.toISOString().split('T')[0];
     await db.from('clashes').delete().eq('publish_date', d);
@@ -257,4 +352,185 @@ async function adminCreateClash() {
 }
 let adminJudgeId = null;
 async function fetchAdminModeration() {
-    const { data } = await db.from('suggestions').select
+    const { data } = await db.from('suggestions').select('*').limit(1);
+    if(data && data.length > 0) {
+        adminJudgeId = data[0].id;
+        document.getElementById('admin-sug-text').innerText = `(${data[0].category}) ${data[0].text}`;
+    } else {
+        document.getElementById('admin-sug-text').innerText = "Nada pendiente.";
+        adminJudgeId = null;
+    }
+}
+async function adminModerate(val) {
+    if(!adminJudgeId) return;
+    const { data: c } = await db.from('suggestions').select('*').eq('id', adminJudgeId).single();
+    if(val===1) { await db.from('questions').insert([{ text: c.text, category: c.category }]); playSfx('success'); }
+    await db.from('suggestions').delete().eq('id', adminJudgeId);
+    fetchAdminModeration();
+}
+async function shareScreenshot(t) {
+    playSfx('click');
+    const captureDiv = document.getElementById('capture-stage');
+    const textDiv = document.getElementById('capture-text');
+    
+    if(t==='oracle') textDiv.innerHTML = `"${document.getElementById('q-text').innerText}"`;
+    else if(t==='clash') { 
+        const w = clashData.va > clashData.vb ? clashData.a : clashData.b; 
+        const p = (clashData.va+clashData.vb)===0?0:Math.round((Math.max(clashData.va,clashData.vb)/(clashData.va+clashData.vb))*100);
+        textDiv.innerHTML = `Prefieren:<br><br><span style="color:#FFD700">${w}</span> (${p}%)`;
+    }
+    else if(t==='profile') textDiv.innerHTML = `Soy ${currentUser.name} ${currentUser.avatar}<br><br>Racha: ${currentUser.streak}`;
+
+    try {
+        const canvas = await html2canvas(captureDiv, { scale: 2, useCORS: true });
+        canvas.toBlob(async blob => {
+            const file = new File([blob], "totalkmon.png", { type: "image/png" });
+            if (navigator.share) await navigator.share({ files: [file], title: 'Totalkmon' });
+            else alert("Tu dispositivo no soporta compartir imágenes.");
+        });
+    } catch (err) { console.error(err); alert("Error generando imagen."); }
+}
+
+async function initUser() {
+    if (!currentUser.id) {
+        const { data } = await db.from('profiles').insert([{
+            username: currentUser.name, avatar: currentUser.avatar, streak: 1, last_visit: new Date().toISOString()
+        }]).select().single();
+        if (data) { currentUser.id = data.id; localStorage.setItem('user_uuid', data.id); }
+    } else {
+        const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
+        if (data) { currentUser.streak = data.streak; currentUser.votes = data.votes_cast; checkStreakCloud(data); }
+    }
+    updateProfileUI();
+}
+async function syncProfileToCloud() {
+    if(currentUser.id) await db.from('profiles').update({
+        username: currentUser.name, avatar: currentUser.avatar, streak: currentUser.streak, votes_cast: currentUser.votes
+    }).eq('id', currentUser.id);
+}
+function checkStreakCloud(d) {
+    const t = new Date().toISOString().split('T')[0];
+    const l = d.last_visit ? d.last_visit.split('T')[0] : null;
+    if (l !== t) {
+        const y = new Date(); y.setDate(y.getDate() - 1);
+        if (l === y.toISOString().split('T')[0]) currentUser.streak++;
+        else currentUser.streak = 1;
+        db.from('profiles').update({ last_visit: new Date().toISOString(), streak: currentUser.streak }).eq('id', currentUser.id);
+        updateProfileUI();
+    }
+}
+
+async function fetchQuestions() {
+    const { data } = await db.from('questions').select('*').limit(50);
+    if (data && data.length > 0) allQuestions = data;
+    else allQuestions = [{text: "Bienvenido.", category: "Inicio"}];
+    nextQuestion();
+}
+function nextQuestion() {
+    let pool = allQuestions;
+    if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
+    if(pool.length === 0) pool = allQuestions;
+    const el = document.querySelector('.card-inner');
+    if(el) {
+        el.style.opacity = '0';
+        setTimeout(() => {
+            const random = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('q-text').innerText = random.text;
+            document.getElementById('q-cat').innerText = random.category;
+            el.style.opacity = '1';
+        }, 200);
+    }
+}
+function setCategory(c, b) {
+    playSfx('click');
+    currentCategory = c;
+    document.querySelectorAll('.topic-chip').forEach(btn => btn.classList.remove('active'));
+    if(b) b.classList.add('active');
+    nextQuestion();
+}
+async function loadClash() {
+    const t = new Date().toISOString().split('T')[0];
+    let { data } = await db.from('clashes').select('*').eq('publish_date', t);
+    if (!data || data.length === 0) { const { data: r } = await db.from('clashes').select('*').limit(1); data = r; }
+    if (data && data.length > 0) {
+        const c = data[0]; currentClashId = c.id;
+        clashData = { a: c.option_a, b: c.option_b, va: c.votes_a, vb: c.votes_b };
+        document.getElementById('text-a').innerText = c.option_a;
+        document.getElementById('text-b').innerText = c.option_b;
+        if (currentUser.id) {
+            const { data: v } = await db.from('user_votes').select('*').eq('user_id', currentUser.id).eq('clash_id', currentClashId).single();
+            if (v || localStorage.getItem('voted_' + c.id)) showResults(c.votes_a, c.votes_b);
+        }
+    }
+}
+async function voteClash(o) {
+    if (!currentClashId || !currentUser.id || document.getElementById('clash-section').classList.contains('voted')) return;
+    playSfx('click');
+    let a = clashData.va, b = clashData.vb;
+    if (o === 'a') a++; else b++;
+    showResults(a, b);
+    await db.from('user_votes').insert({ user_id: currentUser.id, clash_id: currentClashId, vote_option: o });
+    await db.from('clashes').update({ votes_a: a, votes_b: b }).eq('id', currentClashId);
+    localStorage.setItem('voted_' + currentClashId, 'true');
+    currentUser.votes++;
+    updateProfileUI();
+    syncProfileToCloud();
+}
+function showResults(a, b) {
+    const t = a + b;
+    let pa = t === 0 ? 0 : Math.round((a / t) * 100);
+    let pb = t === 0 ? 0 : Math.round((b / t) * 100);
+    document.getElementById('bar-a').style.width = pa + '%';
+    document.getElementById('bar-b').style.width = pb + '%';
+    document.getElementById('perc-a').innerText = pa + '%';
+    document.getElementById('perc-b').innerText = pb + '%';
+    document.getElementById('clash-section').classList.add('voted');
+}
+async function fetchJudge() {
+    const { data } = await db.from('suggestions').select('*').limit(5);
+    if (data && data.length > 0) {
+        const r = data[Math.floor(Math.random() * data.length)];
+        currentJudgeId = r.id;
+        document.getElementById('judge-text').innerText = r.text;
+        document.getElementById('judge-cat').innerText = r.category;
+    } else {
+        document.getElementById('judge-text').innerText = "Nada pendiente.";
+        currentJudgeId = null;
+    }
+}
+async function voteJudgment(v) {
+    if (!currentJudgeId) return;
+    playSfx('click');
+    const { data: c } = await db.from('suggestions').select('*').eq('id', currentJudgeId).single();
+    if (!c) { fetchJudge(); return; }
+    let nv = (c.votes || 0) + v;
+    if (nv >= 5) {
+        await db.from('questions').insert([{ text: c.text, category: c.category }]);
+        await db.from('suggestions').delete().eq('id', currentJudgeId);
+        playSfx('success');
+    } else if (nv <= -5) {
+        await db.from('suggestions').delete().eq('id', currentJudgeId);
+    } else {
+        await db.from('suggestions').update({ votes: nv }).eq('id', currentJudgeId);
+    }
+    currentUser.votes++;
+    updateProfileUI();
+    syncProfileToCloud();
+    fetchJudge();
+}
+function updateProfileUI() {
+    if (!document.getElementById('profile-name')) return;
+    document.getElementById('profile-name').value = currentUser.name;
+    document.getElementById('profile-avatar').innerText = currentUser.avatar;
+    document.getElementById('stat-streak').innerText = currentUser.streak;
+    document.getElementById('streak-count').innerText = currentUser.streak;
+    document.getElementById('stat-votes').innerText = currentUser.votes;
+    localStorage.setItem('profile_name', currentUser.name);
+    localStorage.setItem('profile_avatar', currentUser.avatar);
+    localStorage.setItem('streak', currentUser.streak);
+    localStorage.setItem('profile_votes', currentUser.votes);
+    const l = Math.floor(currentUser.votes / 10) + 1;
+    let t = "Novato";
+    if (l > 5) t = "Juez";
+    if (l > 20) t = "Oráculo";
+    if (l > 5

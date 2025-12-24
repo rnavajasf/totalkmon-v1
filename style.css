@@ -8,7 +8,7 @@
     --red: #FF4757;
     --green: #2ED573;
     --cyan: #00e5ff;
-    --blue: #3742fa; /* Nuevo para Versus */
+    --blue: #3742fa; /* IMPORTANTE PARA VERSUS */
     --safe-bottom: env(safe-area-inset-bottom);
 }
 
