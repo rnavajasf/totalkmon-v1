@@ -1,110 +1,27 @@
-// ==========================================
-// 1. CLASE AUDIO MANAGER (EXCELENCIA V29)
-// ==========================================
-class AudioManager {
-    constructor() {
-        this.ctx = null;
-        this.initialized = false;
-    }
-
-    init() {
-        if (this.initialized) return;
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-            this.ctx = new AudioContext();
-            this.initialized = true;
-            // Desbloqueo silencioso para iOS
-            this.playTone(0, 0, 0); 
-        }
-    }
-
-    playTone(freq, type, duration) {
-        if (!this.ctx) return;
-        if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
-        try {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            
-            const now = this.ctx.currentTime;
-            osc.frequency.setValueAtTime(freq, now);
-            
-            // Envelope simple
-            gain.gain.setValueAtTime(0.1, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            
-            osc.start(now);
-            osc.stop(now + duration);
-        } catch (e) { console.warn("Audio Error", e); }
-    }
-
-    // Efectos de Sonido
-    click() {
-        if (!this.initialized) this.init();
-        this.playTone(600, 'sine', 0.1);
-        if (navigator.vibrate) navigator.vibrate(5); // Haptic
-    }
-
-    swoosh() {
-        if (!this.initialized) this.init();
-        // Simulación de swoosh con tono descendente
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        const now = this.ctx.currentTime;
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.linearRampToValueAtTime(0, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
-        if (navigator.vibrate) navigator.vibrate([10, 30]); // Haptic doble
-    }
-
-    success() {
-        if (!this.initialized) this.init();
-        // Acorde Mayor
-        this.playTone(440, 'sine', 0.3); // A4
-        setTimeout(() => this.playTone(554, 'sine', 0.3), 100); // C#5
-        setTimeout(() => this.playTone(659, 'sine', 0.4), 200); // E5
-        if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Haptic triple
-    }
-}
-
-const audioManager = new AudioManager();
-
-// Wrapper global para compatibilidad
-function playSfx(type) {
-    if (type === 'click') audioManager.click();
-    else if (type === 'swoosh') audioManager.swoosh();
-    else if (type === 'success') audioManager.success();
-}
-
-// ==========================================
-// 2. CONFIGURACIÓN SUPABASE (TUS CLAVES)
-// ==========================================
+// =================================================================
+// 1. CONFIGURACIÓN (TUS CLAVES REALES)
+// =================================================================
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ==========================================
-// 3. ESTADO & DATOS
-// ==========================================
-const imposterWords = ["Hospital", "Cementerio", "Escuela", "Cárcel", "Playa", "Cine", "Discoteca", "Gimnasio", "Aeropuerto", "Supermercado", "Restaurante", "Zoológico", "Hotel", "Teléfono", "Cuchara", "Inodoro", "Cama", "Reloj", "Pizza", "Sushi", "Hamburguesa", "Chocolate", "Perro", "Gato", "León", "Policía", "Médico", "Bombero"];
+// =================================================================
+// 2. DICCIONARIOS DE DATOS
+// =================================================================
+const imposterWords = ["Hospital", "Escuela", "Playa", "Cine", "Gimnasio", "Aeropuerto", "Supermercado", "Restaurante", "Zoológico", "Hotel", "Teléfono", "Cuchara", "Inodoro", "Cama", "Reloj", "Pizza", "Sushi", "Hamburguesa", "Chocolate", "Plátano", "Perro", "Gato", "León", "Policía", "Médico", "Bombero"];
 const debateTopics = [
     { title: "Tortilla de Patatas", a: "CON Cebolla", b: "SIN Cebolla" },
     { title: "Pizza", a: "Con Piña", b: "Sin Piña" },
     { title: "Dinero", a: "Da la felicidad", b: "No la da" },
     { title: "Redes Sociales", a: "Buenas", b: "Tóxicas" },
-    { title: "Cine", a: "Doblado", b: "V.O." },
-    { title: "Vacaciones", a: "Playa", b: "Montaña" }
+    { title: "Cine", a: "Doblado", b: "V.O." }
 ];
 
+// =================================================================
+// 3. ESTADO GLOBAL
+// =================================================================
 let currentUser = { id: localStorage.getItem('u_id'), name: localStorage.getItem('u_name')||'Anónimo', avatar: localStorage.getItem('u_av')||'🦊', streak: 0, votes: 0 };
 let currentRoomId = null;
 let isHost = false;
@@ -113,51 +30,21 @@ let selectedGameMode = 'classic';
 let allQuestions = [];
 let currentCategory = 'aleatorio';
 let currentClashId = null;
-let currentJudgeId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
-let adminTapCount = 0;
 
-// ==========================================
-// 4. INIT & EVENTS
-// ==========================================
+// =================================================================
+// 4. INICIALIZACIÓN
+// =================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-    // Interacción inicial para desbloquear Audio
-    document.body.addEventListener('click', () => audioManager.init(), { once: true });
-    document.body.addEventListener('touchstart', () => audioManager.init(), { once: true });
-
-    updateProfileUI(); // Carga rápida
-    await initUser();
-    await fetchQuestions();
-    
-    // Listeners UI Globales
-    setupEventListeners();
+    try {
+        updateProfileUI(); 
+        await initUser();
+        await fetchQuestions(); // Carga las preguntas al inicio
+    } catch (e) {
+        console.error("Init Error", e);
+    }
 });
 
-function setupEventListeners() {
-    // Dock
-    document.querySelectorAll('.dock-item').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab, btn));
-    });
-    // Oracle
-    document.querySelector('.interactive-card').addEventListener('click', () => { nextQuestion(); playSfx('swoosh'); });
-    document.querySelectorAll('.topic-chip').forEach(chip => {
-        chip.addEventListener('click', () => setCategory(chip.dataset.cat, chip));
-    });
-    // Dilema
-    document.getElementById('btn-vote-a').addEventListener('click', () => voteClash('a'));
-    document.getElementById('btn-vote-b').addEventListener('click', () => voteClash('b'));
-    // Party
-    document.getElementById('btn-create-room').addEventListener('click', createRoom);
-    document.getElementById('btn-join-room').addEventListener('click', joinRoom);
-    document.getElementById('btn-exit-room').addEventListener('click', exitRoom);
-    document.querySelectorAll('.mode-option').forEach(opt => {
-        opt.addEventListener('click', () => selectGameMode(opt.dataset.mode));
-    });
-}
-
-// ==========================================
-// 5. USUARIO
-// ==========================================
 async function initUser() {
     if (!currentUser.id) {
         const { data } = await db.from('profiles').insert([{ username: currentUser.name, avatar: currentUser.avatar, last_visit: new Date().toISOString() }]).select().single();
@@ -168,37 +55,23 @@ async function initUser() {
         else { localStorage.removeItem('u_id'); currentUser.id = null; await initUser(); }
     }
 }
-function updateProfileUI() {
-    if(!document.getElementById('profile-name')) return;
-    document.getElementById('profile-name').value = currentUser.name;
-    document.getElementById('profile-avatar').innerText = currentUser.avatar;
-    document.getElementById('stat-streak').innerText = currentUser.streak;
-    document.getElementById('streak-count').innerText = currentUser.streak;
-    document.getElementById('stat-votes').innerText = currentUser.votes;
-    document.getElementById('profile-level').innerText = "Nivel " + (Math.floor(currentUser.votes/10)+1);
-    localStorage.setItem('u_name', currentUser.name);
-    localStorage.setItem('u_av', currentUser.avatar);
-}
 
-// ==========================================
-// 6. MODO FIESTA
-// ==========================================
+// =================================================================
+// 5. MODO FIESTA
+// =================================================================
 function selectGameMode(mode) {
     playSfx('click');
     selectedGameMode = mode;
     document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
-    const btn = document.getElementById('mode-' + mode);
-    if(btn) btn.classList.add('selected');
+    document.getElementById('mode-' + mode).classList.add('selected');
 }
 
 async function createRoom() {
     if(!currentUser.id) return alert("Cargando perfil...");
     playSfx('click');
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-    
     await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "Sala Lista", current_card_category: "Esperando...", gamemode: selectedGameMode, game_state: 'waiting' });
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'spectator' });
-    
     currentRoomId = code; isHost = true; enterPartyMode(code);
 }
 
@@ -206,12 +79,9 @@ async function joinRoom() {
     const code = document.getElementById('join-code').value.toUpperCase().trim();
     if(code.length !== 4) return alert("Código incorrecto");
     playSfx('click');
-    
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
     if(!data) return alert("Sala no existe");
-    
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'spectator' });
-    
     currentRoomId = code; isHost = false; selectedGameMode = data.gamemode;
     enterPartyMode(code);
 }
@@ -267,11 +137,11 @@ async function handleRoomUpdate(room) {
         box.classList.remove('team-a-style', 'team-b-style');
         if(data && data.role === 'team_a') { box.classList.add('team-a-style'); roleText.innerText = "DEFENDER: " + opts[0]; }
         else if(data && data.role === 'team_b') { box.classList.add('team-b-style'); roleText.innerText = "DEFENDER: " + opts[1]; }
-        else roleText.innerText = "ESPERANDO...";
+        else roleText.innerText = "ESPERANDO ASIGNACIÓN...";
     }
 }
 
-// HOST LOGIC (VERSUS LOCAL CALCULATION)
+// HOST LOGIC
 async function partyNextRound() {
     if(!isHost) return;
     playSfx('click');
@@ -288,7 +158,6 @@ async function partyNextRound() {
     }
     else if(selectedGameMode === 'versus') {
         const topic = debateTopics[Math.floor(Math.random()*debateTopics.length)];
-        // REPARTO DE EQUIPOS (JUSTO)
         const { data: ps } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
         if(ps && ps.length > 0) {
             for(let i=ps.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [ps[i], ps[j]] = [ps[j], ps[i]]; }
@@ -312,14 +181,41 @@ function exitRoom() {
 }
 
 // ==========================================
-// 7. CORE UI
+// 7. CORE UI & ORACLE (FIXED FETCH LIMIT)
 // ==========================================
-async function fetchQuestions() { const { data } = await db.from('questions').select('*').limit(50); if(data) allQuestions = data; else allQuestions=[{text:"Hola",category:"Inicio"}]; nextQuestion(); }
-function nextQuestion() { 
-    let pool=allQuestions; if(currentCategory!=='aleatorio') pool=allQuestions.filter(q=>q.category.toLowerCase()===currentCategory.toLowerCase()); if(pool.length===0) pool=allQuestions;
-    const r=pool[Math.floor(Math.random()*pool.length)]; document.getElementById('q-text').innerText=r.text; document.getElementById('q-cat').innerText=r.category;
+async function fetchQuestions() { 
+    // CORRECCIÓN: Aumentado el límite a 1000 para traer todas las categorías
+    const { data } = await db.from('questions').select('*').limit(1000); 
+    if(data && data.length > 0) allQuestions = data; 
+    else allQuestions = [{text:"Cargando preguntas...", category:"Inicio"}]; 
+    nextQuestion(); 
 }
-function setCategory(c, b) { playSfx('click'); currentCategory=c; document.querySelectorAll('.topic-chip').forEach(x=>x.classList.remove('active')); if(b) b.classList.add('active'); nextQuestion(); }
+
+function nextQuestion() { 
+    let pool = allQuestions;
+    // CORRECCIÓN: Filtro robusto (lowerCase)
+    if(currentCategory.toLowerCase() !== 'aleatorio' && currentCategory.toLowerCase() !== 'mix') {
+        pool = allQuestions.filter(q => q.category && q.category.toLowerCase() === currentCategory.toLowerCase());
+    }
+    
+    // Fallback: Si no hay preguntas de esa categoría, usa todas para evitar pantalla vacía
+    if(pool.length === 0) pool = allQuestions;
+    
+    const r = pool[Math.floor(Math.random()*pool.length)]; 
+    if(r) {
+        document.getElementById('q-text').innerText = r.text;
+        document.getElementById('q-cat').innerText = r.category;
+    }
+}
+
+function setCategory(c, b) { 
+    playSfx('click'); 
+    currentCategory = c; 
+    document.querySelectorAll('.topic-chip').forEach(x=>x.classList.remove('active')); 
+    if(b) b.classList.add('active'); 
+    nextQuestion(); 
+}
+
 function switchTab(t, el) { 
     playSfx('click');
     document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active')); if(el) el.classList.add('active');
@@ -348,7 +244,7 @@ async function voteClash(o) {
     if(!currentClashId || document.getElementById('clash-section').classList.contains('voted')) return;
     playSfx('click');
     let a=clashData.va, b=clashData.vb; if(o==='a') a++; else b++;
-    showResults(a, b); // UI Update Instantáneo
+    showResults(a, b);
     localStorage.setItem('voted_'+currentClashId, 'true');
     if(currentUser.id) {
         await db.from('user_votes').insert({user_id:currentUser.id, clash_id:currentClashId, vote_option:o});
@@ -362,7 +258,7 @@ function showResults(a,b) {
     document.getElementById('clash-section').classList.add('voted');
 }
 
-// EXTRAS
+// UTILS
 function openModal() { document.getElementById('suggestionModal').style.display='flex'; }
 function closeModal() { document.getElementById('suggestionModal').style.display='none'; }
 function openStreakModal() { document.getElementById('streakModal').style.display='flex'; playSfx('click'); }
@@ -393,4 +289,21 @@ document.getElementById('btn-admin-create').addEventListener('click', adminCreat
 document.getElementById('btn-admin-exit').addEventListener('click', () => switchTab('profile'));
 document.getElementById('btn-judge-reject').addEventListener('click', () => voteJudgment(-1));
 document.getElementById('btn-judge-approve').addEventListener('click', () => voteJudgment(1));
-async function voteJudgment(v) { /* Impl */ }
+async function voteJudgment(v) { 
+    // Lógica simplificada de juicio
+    playSfx('click');
+    // Implementación futura: conectar con fetchJudge
+}
+
+// SONIDO (WRAPPER)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSfx(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    try {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if (type === 'click') { osc.frequency.setValueAtTime(600, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); } 
+        else if (type === 'swoosh') { osc.type = 'triangle'; gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+    } catch(e){}
+}
