@@ -60,7 +60,7 @@
                 <div class="card interactive-card" onclick="nextQuestion(); playSfx('swoosh');">
                     <div class="card-inner">
                         <span class="category-pill" id="q-cat">Bienvenida</span>
-                        <p class="question-content" id="q-text">Invocando sabiduría...</p>
+                        <p class="question-content" id="q-text">Cargando...</p>
                         <p class="hint">Toca para siguiente</p>
                     </div>
                 </div>
@@ -78,13 +78,13 @@
             <div class="clash-wrapper">
                 <div class="option-btn opt-a" onclick="voteClash('a')">
                     <div class="progress-bar" id="bar-a"></div>
-                    <span class="opt-text" id="text-a">Cargando...</span>
+                    <span class="opt-text" id="text-a">...</span>
                     <span class="opt-percent" id="perc-a">0%</span>
                 </div>
                 <div class="vs-badge">VS</div>
                 <div class="option-btn opt-b" onclick="voteClash('b')">
                     <div class="progress-bar" id="bar-b"></div>
-                    <span class="opt-text" id="text-b">Cargando...</span>
+                    <span class="opt-text" id="text-b">...</span>
                     <span class="opt-percent" id="perc-b">0%</span>
                 </div>
                 <button class="share-btn" onclick="shareScreenshot('clash')">
@@ -118,7 +118,7 @@
                 <div class="divider"><span>O</span></div>
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
                     <h3>🚀 Unirse</h3>
-                    <input type="text" id="join-code" placeholder="Código (ej: A1B2)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <input type="text" id="join-code" placeholder="CÓDIGO" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
                     <button class="btn-submit" onclick="joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
@@ -260,4 +260,19 @@
     </div>
     <div class="modal-overlay" id="streakModal">
         <div class="modal-content" style="border-color: #FF4500;">
-            <span class="close-modal" onclick="
+            <span class="close-modal" onclick="closeStreakModal()">&times;</span>
+            <i class="fas fa-fire" style="font-size: 3rem; color: #FF4500; margin-bottom: 20px;"></i>
+            <h3 style="color: #FF4500;">Racha de Fuego</h3>
+            <p style="margin-bottom: 20px;">Llevas <strong id="modal-streak-count" style="color:white;">0</strong> días seguidos.</p>
+            <button class="btn-submit" onclick="closeStreakModal()" style="background: #FF4500;">¡Entendido!</button>
+        </div>
+    </div>
+    <div id="capture-stage">
+        <div class="capture-logo"><i class="fas fa-eye" style="color:#FFD700; margin-bottom:10px;"></i><span>TOTALKMON</span></div>
+        <div class="capture-content" id="capture-text"></div>
+        <div class="capture-footer"><span id="capture-url">Descárgala gratis</span></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
