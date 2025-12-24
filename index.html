@@ -97,22 +97,30 @@
         <section id="party-section">
             <div class="section-title">
                 <h2>Modo Fiesta</h2>
-                <p>Sincronización en tiempo real</p>
+                <p>Sincroniza todos los móviles</p>
             </div>
 
             <div id="party-lobby">
+                <div class="info-box" style="background: rgba(255, 215, 0, 0.1); border: 1px solid var(--gold); color: #fff; margin-bottom: 20px;">
+                    <p style="font-size: 0.85rem; line-height: 1.5;">
+                        <strong>¿Para qué sirve?</strong><br>
+                        En una reunión, cread una sala y uníos todos. 
+                        Cuando el anfitrión cambie de tema, 
+                        <strong>cambiará en la pantalla de todos a la vez.</strong>
+                    </p>
+                </div>
+
                 <div class="admin-card">
-                    <h3>Crear Sala</h3>
-                    <p style="font-size: 0.8rem; margin-bottom: 15px; opacity: 0.7;">Sé el anfitrión y controla los móviles de tus amigos.</p>
-                    <button class="btn-submit" onclick="createRoom()">👑 Crear Sala Nueva</button>
+                    <h3>👑 Crear Sala</h3>
+                    <button class="btn-submit" onclick="createRoom()">Generar Código</button>
                 </div>
                 
                 <div class="divider"><span>O</span></div>
 
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
-                    <h3>Unirse a Sala</h3>
-                    <input type="text" id="join-code" placeholder="Código (ej: A1B2)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
-                    <button class="btn-submit" onclick="joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
+                    <h3>🚀 Unirse</h3>
+                    <input type="text" id="join-code" placeholder="Código (ej: X9Z1)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <button class="btn-submit" onclick="joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar a la sala</button>
                 </div>
             </div>
 
@@ -124,7 +132,7 @@
                 </div>
 
                 <div class="card-container" style="min-height: 300px;">
-                    <div class="card party-card">
+                    <div class="card party-card" id="party-card-visual">
                         <div class="card-inner">
                             <span class="category-pill" id="party-cat">Esperando...</span>
                             <p class="question-content" id="party-text">El anfitrión elegirá la pregunta.</p>
@@ -133,14 +141,14 @@
                 </div>
 
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
-                    <button class="btn-submit" onclick="partyNextQuestion()" style="height: 60px; font-size: 1.2rem;">
-                        <i class="fas fa-random"></i> Siguiente Pregunta
+                    <button class="btn-submit" onclick="partyNextQuestion()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;">
+                        <i class="fas fa-random"></i> Siguiente Tema
                     </button>
-                    <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la pantalla de todos.</p>
+                    <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la fiesta.</p>
                 </div>
                 
                 <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;">
-                    <p><i class="fas fa-sync fa-spin"></i> Sincronizado con el anfitrión</p>
+                    <p class="pulse-text"><i class="fas fa-link"></i> Conectado al anfitrión</p>
                 </div>
             </div>
         </section>
@@ -166,7 +174,7 @@
         <section id="profile-section">
             <div class="section-title">
                 <h2>Tu Legado</h2>
-                <p>Tu identidad en el oráculo</p>
+                <p>Tu identidad</p>
             </div>
             <div class="profile-card">
                 <div class="avatar-wrapper" onclick="toggleAvatarEdit()">
@@ -181,7 +189,7 @@
                 <div class="av-option" onclick="setAvatar('🦄')">🦄</div><div class="av-option" onclick="setAvatar('💀')">💀</div><div class="av-option" onclick="setAvatar('👻')">👻</div><div class="av-option" onclick="setAvatar('🐲')">🐲</div>
             </div>
             <div class="stats-grid">
-                <div class="stat-box"><i class="fas fa-fire stat-icon" style="color: #FF4500;"></i><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha Días</span></div>
+                <div class="stat-box"><i class="fas fa-fire stat-icon" style="color: #FF4500;"></i><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha</span></div>
                 <div class="stat-box"><i class="fas fa-gavel stat-icon" style="color: var(--gold);"></i><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Juzgadas</span></div>
             </div>
             <button class="share-btn" onclick="shareScreenshot('profile')" style="margin-top:20px; display:flex;">
@@ -192,7 +200,7 @@
         <section id="admin-section">
             <div class="section-title">
                 <h2 style="color: #00e5ff;">GOD MODE</h2>
-                <p>Panel de Control CEO</p>
+                <p>Panel CEO</p>
             </div>
             <div class="stats-grid">
                 <div class="stat-box" style="border-color: #00e5ff;"><span class="stat-value" id="admin-users">0</span><span class="stat-label">Usuarios</span></div>
@@ -205,7 +213,7 @@
                 <button class="btn-submit" onclick="adminCreateClash()" style="background: #00e5ff; color:black;">Programar</button>
             </div>
             <div class="admin-card">
-                <h3>Limpieza Rápida</h3>
+                <h3>Limpieza</h3>
                 <p id="admin-sug-text" style="font-size: 0.9rem; margin: 15px 0;">Cargando...</p>
                 <div class="judge-actions">
                     <button class="btn-judge btn-reject" onclick="adminModerate(-1)"><i class="fas fa-trash"></i></button>
@@ -244,10 +252,7 @@
         </div>
     </div>
     <div id="capture-stage">
-        <div class="capture-logo">
-            <i class="fas fa-eye" style="color:#FFD700; margin-bottom:10px;"></i>
-            <span>TOTALKMON</span>
-        </div>
+        <div class="capture-logo"><i class="fas fa-eye" style="color:#FFD700; margin-bottom:10px;"></i><span>TOTALKMON</span></div>
         <div class="capture-content" id="capture-text"></div>
         <div class="capture-footer"><span id="capture-url">Descárgala gratis</span></div>
     </div>

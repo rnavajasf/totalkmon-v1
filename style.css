@@ -30,25 +30,12 @@ header { padding-top: 40px; padding-bottom: 10px; text-align: center; z-index: 1
 .logo-container { width: 50px; height: 50px; margin: 0 auto; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
 h1 { font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--gold); }
 
-/* RACHAS */
 .header-top { position: absolute; top: 40px; right: 20px; z-index: 20; }
-.streak-badge {
-    background: rgba(255, 69, 0, 0.1); border: 1px solid #FF4500; color: #FF4500;
-    padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;
-    display: flex; align-items: center; gap: 5px; cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 69, 0, 0.2); animation: pulseFire 2s infinite;
-}
+.streak-badge { background: rgba(255, 69, 0, 0.1); border: 1px solid #FF4500; color: #FF4500; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 5px; cursor: pointer; box-shadow: 0 0 10px rgba(255, 69, 0, 0.2); animation: pulseFire 2s infinite; }
 @keyframes pulseFire { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
 /* MAIN STAGE */
-.main-stage { 
-    flex-grow: 1; overflow-y: auto; padding: 20px; 
-    padding-bottom: calc(90px + var(--safe-bottom)); 
-    display: flex; flex-direction: column; align-items: center;
-    width: 100%; max-width: 600px; margin: 0 auto;
-    position: relative; z-index: 10;
-}
-
+.main-stage { flex-grow: 1; overflow-y: auto; padding: 20px; padding-bottom: calc(90px + var(--safe-bottom)); display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
 section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .active-section { display: block; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -87,7 +74,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
 .admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
-/* FIESTA / PARTY */
+/* FIESTA */
 .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
 .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .divider span { padding: 0 10px; }
@@ -98,6 +85,15 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .party-card { border-color: var(--cyan); box-shadow: 0 0 30px rgba(0, 229, 255, 0.2); }
 #party-lobby .admin-card { background: rgba(255,255,255,0.03); border-color: var(--gold-dim); }
 #party-lobby h3 { color: var(--gold); }
+.pulse-text { animation: pulseText 2s infinite; }
+@keyframes pulseText { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+/* ANIMACIÓN FLASH (NUEVO PARA PARTY) */
+.flash-animation { animation: flash 0.5s ease-out; }
+@keyframes flash {
+    0% { background-color: rgba(0, 229, 255, 0.5); transform: scale(1.05); }
+    100% { background-color: var(--glass); transform: scale(1); }
+}
 
 /* PERFIL */
 .profile-card { background: var(--glass); border: 1px solid var(--gold-dim); border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 20px; width: 100%; }

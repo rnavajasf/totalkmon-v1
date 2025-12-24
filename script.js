@@ -12,7 +12,7 @@ let currentJudgeId = null;
 let currentClashId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
 let adminTapCount = 0;
-// PARTY MODE STATE
+// PARTY MODE
 let currentRoomId = null;
 let isHost = false;
 let roomSubscription = null;
@@ -29,107 +29,75 @@ function playSfx(type) {
     else if (type === 'success') { [440, 554, 659].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.001, now + 0.5 + (i*0.1)); o.start(now); o.stop(now + 0.5); }); }
 }
 
-// ==========================================
 // MODO FIESTA (REALTIME)
-// ==========================================
 async function createRoom() {
     if(!currentUser.id) return alert("Espera a que cargue tu perfil.");
     playSfx('click');
-    // Generar código de 4 letras
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "¡La fiesta comienza!", current_card_category: "Inicio" });
-    
-    if(error) return alert("Error al crear sala. Intenta de nuevo.");
-    
-    currentRoomId = code;
-    isHost = true;
-    enterPartyMode(code);
+    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "¡Esperando al anfitrión!", current_card_category: "Sala Lista" });
+    if(error) return alert("Error al crear sala.");
+    currentRoomId = code; isHost = true; enterPartyMode(code);
 }
-
 async function joinRoom() {
     const code = document.getElementById('join-code').value.toUpperCase().trim();
-    if(code.length !== 4) return alert("El código debe tener 4 letras.");
+    if(code.length !== 4) return alert("Código de 4 letras.");
     playSfx('click');
-    
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
     if(!data) return alert("Sala no encontrada.");
-    
-    currentRoomId = code;
-    isHost = false;
-    enterPartyMode(code);
+    currentRoomId = code; isHost = false; enterPartyMode(code);
 }
-
 function enterPartyMode(code) {
     document.getElementById('party-lobby').style.display = 'none';
     document.getElementById('party-active').style.display = 'block';
     document.getElementById('display-room-code').innerText = code;
     
-    if(isHost) {
-        document.getElementById('host-controls').style.display = 'block';
-        document.getElementById('guest-controls').style.display = 'none';
-    } else {
-        document.getElementById('host-controls').style.display = 'none';
-        document.getElementById('guest-controls').style.display = 'block';
-    }
+    if(isHost) { document.getElementById('host-controls').style.display = 'block'; document.getElementById('guest-controls').style.display = 'none'; } 
+    else { document.getElementById('host-controls').style.display = 'none'; document.getElementById('guest-controls').style.display = 'block'; }
 
-    // SUSCRIPCIÓN REALTIME (LA MAGIA)
     roomSubscription = db.channel('room-'+code)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, (payload) => {
-        // Cuando cambia la DB, actualizamos la pantalla
         updatePartyCard(payload.new.current_card_text, payload.new.current_card_category);
     })
     .subscribe();
 
-    // Cargar estado inicial si soy invitado
-    if(!isHost) {
-        db.from('rooms').select('*').eq('id', code).single().then(({data}) => {
-            if(data) updatePartyCard(data.current_card_text, data.current_card_category);
-        });
-    }
+    if(!isHost) { db.from('rooms').select('*').eq('id', code).single().then(({data}) => { if(data) updatePartyCard(data.current_card_text, data.current_card_category); }); }
 }
-
 function updatePartyCard(text, category) {
-    const cardContent = document.querySelector('.party-card .card-inner');
-    cardContent.style.opacity = '0';
+    const card = document.getElementById('party-card-visual');
+    const inner = card.querySelector('.card-inner');
+    
+    // EFECTO VISUAL (FLASH)
+    card.classList.remove('flash-animation');
+    void card.offsetWidth; // Trigger reflow
+    card.classList.add('flash-animation');
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]); // Vibración doble
+
     playSfx('swoosh');
+    inner.style.opacity = '0';
     setTimeout(() => {
         document.getElementById('party-text').innerText = text;
         document.getElementById('party-cat').innerText = category;
-        cardContent.style.opacity = '1';
+        inner.style.opacity = '1';
     }, 200);
 }
-
 async function partyNextQuestion() {
     if(!isHost) return;
-    // Elegir pregunta random localmente y enviarla a la DB
     const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
     playSfx('click');
-    
-    // Al actualizar la DB, Supabase avisará a todos (incluido a mí)
-    await db.from('rooms').update({ 
-        current_card_text: random.text, 
-        current_card_category: random.category 
-    }).eq('id', currentRoomId);
+    await db.from('rooms').update({ current_card_text: random.text, current_card_category: random.category }).eq('id', currentRoomId);
 }
-
 function exitRoom() {
     if(roomSubscription) db.removeChannel(roomSubscription);
-    currentRoomId = null;
-    isHost = false;
+    currentRoomId = null; isHost = false;
     document.getElementById('party-lobby').style.display = 'block';
     document.getElementById('party-active').style.display = 'none';
     document.getElementById('join-code').value = "";
 }
 
-// ==========================================
 // CORE & UTILS
-// ==========================================
 function triggerAdminUnlock() {
     adminTapCount++;
-    if (adminTapCount === 5) {
-        if(prompt("🔐 PIN:") === "2025") { alert("CEO Mode."); switchTab('admin'); loadAdminStats(); fetchAdminModeration(); }
-        adminTapCount = 0;
-    }
+    if (adminTapCount === 5) { if(prompt("🔐 PIN:") === "2025") { alert("CEO Mode."); switchTab('admin'); loadAdminStats(); fetchAdminModeration(); } adminTapCount = 0; }
 }
 async function loadAdminStats() {
     const { count: u } = await db.from('profiles').select('*', { count: 'exact', head: true });
@@ -157,8 +125,6 @@ async function adminModerate(val) {
     if(val===1) { await db.from('questions').insert([{ text: c.text, category: c.category }]); playSfx('success'); }
     await db.from('suggestions').delete().eq('id', adminJudgeId); fetchAdminModeration();
 }
-
-// SHARE & INIT
 async function shareScreenshot(t) {
     playSfx('click'); const cd = document.getElementById('capture-stage'); const td = document.getElementById('capture-text');
     if(t==='oracle') td.innerHTML = `"${document.getElementById('q-text').innerText}"`;
@@ -176,7 +142,6 @@ async function initUser() {
 }
 async function syncProfileToCloud() { if(currentUser.id) await db.from('profiles').update({ username: currentUser.name, avatar: currentUser.avatar, streak: currentUser.streak, votes_cast: currentUser.votes }).eq('id', currentUser.id); }
 function checkStreakCloud(d) { const t=new Date().toISOString().split('T')[0]; const l=d.last_visit?d.last_visit.split('T')[0]:null; if(l!==t) { const y=new Date(); y.setDate(y.getDate()-1); if(l===y.toISOString().split('T')[0]) currentUser.streak++; else currentUser.streak=1; db.from('profiles').update({last_visit:new Date().toISOString(), streak:currentUser.streak}).eq('id',currentUser.id); updateProfileUI(); } }
-
 async function fetchQuestions() { const {data}=await db.from('questions').select('*').limit(50); if(data) allQuestions=data; else allQuestions=[{text:"Hola",category:"Inicio"}]; nextQuestion(); }
 function nextQuestion() { 
     let pool=allQuestions; if(currentCategory!=='aleatorio') pool=allQuestions.filter(q=>q.category.toLowerCase()===currentCategory.toLowerCase()); if(pool.length===0) pool=allQuestions;
