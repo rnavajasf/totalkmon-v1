@@ -7,7 +7,7 @@
     --glass: rgba(22, 22, 35, 0.8);
     --red: #FF4757;
     --green: #2ED573;
-    --cyan: #00e5ff; /* Color Admin */
+    --cyan: #00e5ff;
     --safe-bottom: env(safe-area-inset-bottom);
 }
 
@@ -79,11 +79,13 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .opt-percent { font-weight: 800; font-size: 1.1rem; opacity: 0; } .voted .opt-percent { opacity: 1; }
 .vs-badge { text-align: center; font-size: 0.8rem; color: #555; font-weight: 900; margin: -10px 0; z-index: 5; }
 
-/* BOTONES SHARE */
+/* SHARE & ADMIN STYLES */
 .share-btn { background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-dim); padding: 12px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; margin-top: 15px; display: none; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; }
 .voted .share-btn { display: flex; }
 .mini-share-btn { margin-top: 15px; background: rgba(255,255,255,0.05); color: #888; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
-.mini-share-btn:hover { color: var(--gold); background: rgba(255,215,0,0.1); }
+.admin-card { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center; }
+.admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
+.admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
 /* PERFIL */
 .profile-card { background: var(--glass); border: 1px solid var(--gold-dim); border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 20px; width: 100%; }
@@ -100,11 +102,6 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .stat-icon { font-size: 1.2rem; margin-bottom: 5px; }
 .stat-value { font-size: 1.5rem; font-weight: 800; color: white; }
 .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
-
-/* ESTILOS ADMIN (GOD MODE) */
-.admin-card { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center; }
-.admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
-.admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
 /* JUICIO */
 .judge-badge { background: var(--red); color: white; padding: 4px 10px; border-radius: 4px; font-family: 'Cinzel', serif; font-size: 0.7rem; margin-bottom: 15px; }

@@ -16,6 +16,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <link rel="stylesheet" href="style.css">
     
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -117,7 +118,6 @@
                 <h2>Tu Legado</h2>
                 <p>Tu identidad en el oráculo</p>
             </div>
-            
             <div class="profile-card">
                 <div class="avatar-wrapper" onclick="toggleAvatarEdit()">
                     <div class="avatar-circle" id="profile-avatar">🦊</div>
@@ -126,17 +126,14 @@
                 <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Apodo" onblur="saveProfile()" maxlength="12">
                 <p class="level-badge" id="profile-level" onclick="triggerAdminUnlock()">Nivel 1: Novato</p>
             </div>
-
             <div id="avatar-selector" class="avatar-grid" style="display: none;">
                 <div class="av-option" onclick="setAvatar('🦊')">🦊</div><div class="av-option" onclick="setAvatar('👽')">👽</div><div class="av-option" onclick="setAvatar('🤖')">🤖</div><div class="av-option" onclick="setAvatar('🦁')">🦁</div>
                 <div class="av-option" onclick="setAvatar('🦄')">🦄</div><div class="av-option" onclick="setAvatar('💀')">💀</div><div class="av-option" onclick="setAvatar('👻')">👻</div><div class="av-option" onclick="setAvatar('🐲')">🐲</div>
             </div>
-
             <div class="stats-grid">
                 <div class="stat-box"><i class="fas fa-fire stat-icon" style="color: #FF4500;"></i><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha Días</span></div>
                 <div class="stat-box"><i class="fas fa-gavel stat-icon" style="color: var(--gold);"></i><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Juzgadas</span></div>
             </div>
-            
             <button class="share-btn" onclick="shareScreenshot('profile')" style="margin-top:20px; display:flex;">
                 <i class="fas fa-id-card"></i> Compartir Perfil
             </button>
@@ -147,34 +144,24 @@
                 <h2 style="color: #00e5ff;">GOD MODE</h2>
                 <p>Panel de Control CEO</p>
             </div>
-
             <div class="stats-grid">
-                <div class="stat-box" style="border-color: #00e5ff;">
-                    <span class="stat-value" id="admin-users">0</span>
-                    <span class="stat-label">Usuarios Totales</span>
-                </div>
-                <div class="stat-box" style="border-color: #00e5ff;">
-                    <span class="stat-value" id="admin-pending">0</span>
-                    <span class="stat-label">Pendientes</span>
-                </div>
+                <div class="stat-box" style="border-color: #00e5ff;"><span class="stat-value" id="admin-users">0</span><span class="stat-label">Usuarios</span></div>
+                <div class="stat-box" style="border-color: #00e5ff;"><span class="stat-value" id="admin-pending">0</span><span class="stat-label">Pendientes</span></div>
             </div>
-
             <div class="admin-card">
                 <h3>Crear Dilema Mañana</h3>
-                <input type="text" id="admin-opt-a" placeholder="Opción A (ej: Ser rico)">
-                <input type="text" id="admin-opt-b" placeholder="Opción B (ej: Ser guapo)">
+                <input type="text" id="admin-opt-a" placeholder="Opción A">
+                <input type="text" id="admin-opt-b" placeholder="Opción B">
                 <button class="btn-submit" onclick="adminCreateClash()" style="background: #00e5ff; color:black;">Programar</button>
             </div>
-
             <div class="admin-card">
                 <h3>Limpieza Rápida</h3>
-                <p id="admin-sug-text" style="font-size: 0.9rem; margin: 15px 0; font-style: italic;">Cargando...</p>
+                <p id="admin-sug-text" style="font-size: 0.9rem; margin: 15px 0;">Cargando...</p>
                 <div class="judge-actions">
                     <button class="btn-judge btn-reject" onclick="adminModerate(-1)"><i class="fas fa-trash"></i></button>
                     <button class="btn-judge btn-approve" onclick="adminModerate(1)" style="border-color:#00e5ff; color:#00e5ff; background: rgba(0,229,255,0.1);"><i class="fas fa-check"></i></button>
                 </div>
             </div>
-            
             <button class="mini-share-btn" onclick="switchTab('profile')" style="margin: 20px auto;">Salir</button>
         </section>
 
