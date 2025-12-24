@@ -1,11 +1,58 @@
-// CONFIGURACIÓN
+// CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ESTADO
-let currentUser = { id: localStorage.getItem('user_uuid'), name: localStorage.getItem('profile_name')||'Anónimo', avatar: localStorage.getItem('profile_avatar')||'🦊', streak: parseInt(localStorage.getItem('streak')||0), votes: parseInt(localStorage.getItem('profile_votes')||0) };
+// ==========================================
+// DICCIONARIO IMPOSTOR (300 PALABRAS)
+// ==========================================
+const imposterWords = [
+    // LUGARES
+    "Hospital", "Cementerio", "Escuela", "Cárcel", "Playa", "Cine", "Discoteca", "Gimnasio", "Biblioteca", "Aeropuerto",
+    "Supermercado", "Restaurante", "Iglesia", "Zoológico", "Circo", "Museo", "Piscina", "Banco", "Hotel", "Farmacia",
+    "Estadio", "Parque", "Teatro", "Gasolinera", "Peluquería", "Casino", "Sauna", "Ascensor", "Cocina", "Baño",
+    "Ático", "Sótano", "Cueva", "Desierto", "Selva", "Isla", "Montaña", "Volcán", "Granja", "Castillo",
+    
+    // OBJETOS COTIDIANOS
+    "Teléfono", "Cuchara", "Inodoro", "Cama", "Espejo", "Reloj", "Llave", "Gafas", "Zapato", "Calcetín",
+    "Mochila", "Paraguas", "Ordenador", "Silla", "Mesa", "Lámpara", "Ventana", "Puerta", "Almohada", "Sábana",
+    "Toalla", "Jabón", "Cepillo de dientes", "Peine", "Tijeras", "Cuchillo", "Tenedor", "Plato", "Vaso", "Botella",
+    "Sartén", "Microondas", "Nevera", "Lavadora", "Televisión", "Mando a distancia", "Cargador", "Auriculares", "Cartera", "Moneda",
+
+    // COMIDA
+    "Pizza", "Sushi", "Hamburguesa", "Huevo", "Pan", "Queso", "Chocolate", "Helado", "Plátano", "Manzana",
+    "Naranja", "Sandía", "Uvas", "Fresa", "Tomate", "Patata", "Lechuga", "Zanahoria", "Pollo", "Pescado",
+    "Gambas", "Jamón", "Salchicha", "Yogur", "Leche", "Café", "Té", "Cerveza", "Vino", "Agua",
+    "Aceite", "Sal", "Azúcar", "Miel", "Galleta", "Pastel", "Donut", "Palomitas", "Arroz", "Espaguetis",
+
+    // ANIMALES
+    "Perro", "Gato", "Ratón", "León", "Tigre", "Elefante", "Jirafa", "Mono", "Gorila", "Oso",
+    "Lobo", "Zorro", "Conejo", "Caballo", "Vaca", "Cerdo", "Oveja", "Cabra", "Gallina", "Pato",
+    "Águila", "Loro", "Pingüino", "Serpiente", "Cocodrilo", "Tortuga", "Rana", "Pez", "Tiburón", "Ballena",
+    "Delfín", "Pulpo", "Cangrejo", "Araña", "Escorpión", "Mosca", "Mosquito", "Abeja", "Hormiga", "Mariposa",
+
+    // PROFESIONES & ROLES
+    "Policía", "Ladrón", "Médico", "Enfermero", "Bombero", "Profesor", "Alumno", "Cocinero", "Camarero", "Piloto",
+    "Astronauta", "Futbolista", "Cantante", "Actor", "Payaso", "Mago", "Juez", "Abogado", "Presidente", "Rey",
+    "Reina", "Princesa", "Caballero", "Pirata", "Ninja", "Samurái", "Vampiro", "Zombi", "Fantasma", "Robot",
+    
+    // ACCIONES & CONCEPTOS
+    "Dormir", "Comer", "Correr", "Nadar", "Volar", "Llorar", "Reír", "Besar", "Bailar", "Cantar",
+    "Amor", "Odio", "Miedo", "Guerra", "Paz", "Navidad", "Halloween", "Cumpleaños", "Boda", "Divorcio"
+];
+
+// ==========================================
+// ESTADO GLOBAL
+// ==========================================
+let currentUser = {
+    id: localStorage.getItem('user_uuid') || null,
+    name: localStorage.getItem('profile_name') || 'Anónimo',
+    avatar: localStorage.getItem('profile_avatar') || '🦊',
+    streak: parseInt(localStorage.getItem('streak') || 0),
+    votes: parseInt(localStorage.getItem('profile_votes') || 0)
+};
+
 let allQuestions = [];
 let currentCategory = 'aleatorio';
 let currentJudgeId = null;
@@ -18,7 +65,6 @@ let currentRoomId = null;
 let isHost = false;
 let roomSubscription = null;
 let selectedGameMode = 'classic';
-let myRole = 'civilian';
 
 // SONIDO
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -47,7 +93,6 @@ async function createRoom() {
     playSfx('click');
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
     
-    // Crear sala con MODO
     const { error } = await db.from('rooms').insert({ 
         id: code, 
         host_id: currentUser.id, 
@@ -58,9 +103,7 @@ async function createRoom() {
     
     if(error) return alert("Error al crear sala.");
     
-    // Unirme como participante
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
-    
     currentRoomId = code; isHost = true; enterPartyMode(code, selectedGameMode);
 }
 
@@ -72,9 +115,7 @@ async function joinRoom() {
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
     if(!data) return alert("Sala no encontrada.");
     
-    // Unirme
     await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
-
     currentRoomId = code; isHost = false; 
     enterPartyMode(code, data.gamemode);
 }
@@ -84,7 +125,6 @@ function enterPartyMode(code, mode) {
     document.getElementById('party-active').style.display = 'block';
     document.getElementById('display-room-code').innerText = code;
     
-    // Configurar interfaz según modo
     selectedGameMode = mode;
     document.getElementById('party-card-classic').style.display = mode === 'classic' ? 'flex' : 'none';
     document.getElementById('party-card-imposter').style.display = mode === 'imposter' ? 'flex' : 'none';
@@ -97,14 +137,12 @@ function enterPartyMode(code, mode) {
         document.getElementById('guest-controls').style.display = 'block'; 
     }
 
-    // SUSCRIPCIÓN REALTIME
     roomSubscription = db.channel('room-'+code)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, (payload) => {
         handleRoomUpdate(payload.new);
     })
     .subscribe();
 
-    // Cargar estado inicial
     if(!isHost) { 
         db.from('rooms').select('*').eq('id', code).single().then(({data}) => { 
             if(data) handleRoomUpdate(data);
@@ -113,24 +151,19 @@ function enterPartyMode(code, mode) {
 }
 
 async function handleRoomUpdate(roomData) {
-    // Si ha cambiado el modo de juego
     if(roomData.gamemode !== selectedGameMode) {
         selectedGameMode = roomData.gamemode;
         document.getElementById('party-card-classic').style.display = selectedGameMode === 'classic' ? 'flex' : 'none';
         document.getElementById('party-card-imposter').style.display = selectedGameMode === 'imposter' ? 'flex' : 'none';
     }
 
-    // LÓGICA CLÁSICA
     if(selectedGameMode === 'classic') {
         updateClassicCard(roomData.current_card_text, roomData.current_card_category);
     } 
-    // LÓGICA IMPOSTOR
     else if(selectedGameMode === 'imposter') {
-        // Averiguar mi rol actual
         if(currentUser.id === roomData.imposter_id) {
-            updateImposterCard("🤫 ERES EL IMPOSTOR", "Disimula y miente");
+            updateImposterCard("🤫 ERES EL IMPOSTOR", "Nadie lo sabe. Disimula.");
         } else {
-            // Si soy civil, veo la palabra secreta (usamos current_card_text como palabra)
             updateImposterCard(roomData.current_card_text, "Palabra Secreta");
         }
     }
@@ -152,8 +185,8 @@ function updateImposterCard(mainText, subText) {
     const card = document.getElementById('party-card-imposter');
     triggerFlash(card);
     document.getElementById('imposter-role-text').innerText = mainText;
-    // Ocultar al principio para suspense
-    document.getElementById('imposter-role-text').style.filter = 'blur(10px)';
+    document.getElementById('imposter-role-text').style.filter = 'blur(15px)'; // Empieza borroso por seguridad
+    card.querySelector('.hint').innerText = subText;
 }
 
 function triggerFlash(element) {
@@ -169,42 +202,38 @@ async function partyNextRound() {
     if(!isHost) return;
     playSfx('click');
 
-    const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
-
     if(selectedGameMode === 'classic') {
+        const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
         await db.from('rooms').update({ 
             current_card_text: random.text, 
             current_card_category: random.category 
         }).eq('id', currentRoomId);
     } 
     else if(selectedGameMode === 'imposter') {
-        // 1. Obtener participantes
+        // 1. Elegir Palabra del Diccionario
+        const secretWord = imposterWords[Math.floor(Math.random() * imposterWords.length)];
+
+        // 2. Elegir Impostor
         const { data: participants } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
         
+        let imposter = null;
         if(!participants || participants.length < 2) {
-             // Modo debug si estás solo, te eliges a ti mismo para probar
-             const imposter = currentUser.id;
-             await db.from('rooms').update({
-                current_card_text: random.text, // Usamos la pregunta como "Palabra Secreta"
-                imposter_id: imposter,
-                game_state: 'playing'
-             }).eq('id', currentRoomId);
+             imposter = currentUser.id; // Debug si juegas solo
         } else {
-            // Elegir impostor al azar
-            const imposter = participants[Math.floor(Math.random() * participants.length)].user_id;
-            
-            await db.from('rooms').update({
-                current_card_text: random.text, 
-                imposter_id: imposter,
-                game_state: 'playing'
-            }).eq('id', currentRoomId);
+            imposter = participants[Math.floor(Math.random() * participants.length)].user_id;
         }
+        
+        // 3. Enviar a la Nube
+        await db.from('rooms').update({
+            current_card_text: secretWord, 
+            imposter_id: imposter,
+            game_state: 'playing'
+        }).eq('id', currentRoomId);
     }
 }
 
 function exitRoom() {
     if(roomSubscription) db.removeChannel(roomSubscription);
-    // Borrarme de la sala
     if(currentRoomId && currentUser.id) {
         db.from('room_participants').delete().match({ room_id: currentRoomId, user_id: currentUser.id });
     }
