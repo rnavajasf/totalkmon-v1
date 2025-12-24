@@ -1,4 +1,4 @@
-// CONFIGURACIÓN SUPABASE (TUS CLAVES)
+// CONFIGURACIÓN SUPABASE
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 const { createClient } = supabase;
@@ -11,7 +11,7 @@ let currentJudgeId = null;
 let currentClashId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
 
-// SONIDO (SFX)
+// SONIDO
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSfx(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -31,7 +31,7 @@ function playSfx(type) {
         gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
         osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
-    else if (type === 'success') { // Sonido especial para racha o éxito
+    else if (type === 'success') { 
         [440, 554, 659].forEach((f, i) => {
             const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
             o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f;
@@ -41,30 +41,28 @@ function playSfx(type) {
     }
 }
 
-// 1. RACHAS (STREAKS)
+// 1. RACHAS Y MODAL
 function checkStreak() {
     const today = new Date().toISOString().split('T')[0];
     const lastVisit = localStorage.getItem('lastVisit');
     let streak = parseInt(localStorage.getItem('streak') || 0);
 
-    // Si es la primera vez que entra HOY
     if (lastVisit !== today) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
         if (lastVisit === yesterdayStr) {
-            streak++; // Racha continúa
-            setTimeout(() => playSfx('success'), 500); // Sonido premio
+            streak++; 
+            setTimeout(() => playSfx('success'), 500); 
         } else {
-            streak = 1; // Racha rota o empieza
+            streak = 1; 
         }
         
         localStorage.setItem('lastVisit', today);
         localStorage.setItem('streak', streak);
     }
 
-    // Actualizar UI
     const badge = document.getElementById('streak-badge');
     const count = document.getElementById('streak-count');
     
@@ -72,6 +70,16 @@ function checkStreak() {
         badge.style.display = 'flex';
         count.innerText = streak;
     }
+}
+
+function openStreakModal() {
+    // Actualizar el número dentro del modal antes de abrir
+    document.getElementById('modal-streak-count').innerText = document.getElementById('streak-count').innerText;
+    document.getElementById('streakModal').style.display = 'flex';
+    playSfx('click');
+}
+function closeStreakModal() {
+    document.getElementById('streakModal').style.display = 'none';
 }
 
 // 2. ORÁCULO
@@ -227,6 +235,6 @@ for(let i=0;i<20;i++){
     pc.appendChild(p);
 }
 
-// INICIO DE LA APP
+// INICIO
 checkStreak();
 fetchQuestions();
