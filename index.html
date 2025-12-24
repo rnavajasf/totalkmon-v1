@@ -97,22 +97,23 @@
         <section id="party-section">
             <div class="section-title">
                 <h2>Modo Fiesta</h2>
-                <p>Sincroniza todos los móviles</p>
+                <p>Juegos Multijugador</p>
             </div>
 
             <div id="party-lobby">
-                <div class="info-box" style="background: rgba(255, 215, 0, 0.1); border: 1px solid var(--gold); color: #fff; margin-bottom: 20px;">
-                    <p style="font-size: 0.85rem; line-height: 1.5;">
-                        <strong>¿Para qué sirve?</strong><br>
-                        En una reunión, cread una sala y uníos todos. 
-                        Cuando el anfitrión cambie de tema, 
-                        <strong>cambiará en la pantalla de todos a la vez.</strong>
-                    </p>
-                </div>
-
                 <div class="admin-card">
                     <h3>👑 Crear Sala</h3>
-                    <button class="btn-submit" onclick="createRoom()">Generar Código</button>
+                    <div class="gamemode-selector">
+                        <div class="mode-option selected" id="mode-classic" onclick="selectGameMode('classic')">
+                            <i class="fas fa-comments"></i>
+                            <span>Clásico</span>
+                        </div>
+                        <div class="mode-option" id="mode-imposter" onclick="selectGameMode('imposter')">
+                            <i class="fas fa-user-secret"></i>
+                            <span>Impostor</span>
+                        </div>
+                    </div>
+                    <button class="btn-submit" onclick="createRoom()">Crear Sala</button>
                 </div>
                 
                 <div class="divider"><span>O</span></div>
@@ -132,23 +133,36 @@
                 </div>
 
                 <div class="card-container" style="min-height: 300px;">
-                    <div class="card party-card" id="party-card-visual">
+                    
+                    <div class="card party-card" id="party-card-classic">
                         <div class="card-inner">
                             <span class="category-pill" id="party-cat">Esperando...</span>
                             <p class="question-content" id="party-text">El anfitrión elegirá la pregunta.</p>
                         </div>
                     </div>
+
+                    <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;">
+                        <div class="card-inner">
+                            <i class="fas fa-fingerprint" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <span class="category-pill" style="background: #ff0055; color: white;">MISIÓN SECRETA</span>
+                            <p class="question-content" id="imposter-role-text" style="filter: blur(5px); cursor: pointer;" onclick="this.style.filter='none'">
+                                Toca para revelar tu rol
+                            </p>
+                            <p class="hint">Mantenlo en secreto</p>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
-                    <button class="btn-submit" onclick="partyNextQuestion()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;">
-                        <i class="fas fa-random"></i> Siguiente Tema
+                    <button class="btn-submit" id="btn-next-round" onclick="partyNextRound()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;">
+                        <i class="fas fa-play"></i> Siguiente Ronda
                     </button>
-                    <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la fiesta.</p>
+                    <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la partida.</p>
                 </div>
                 
                 <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;">
-                    <p class="pulse-text"><i class="fas fa-link"></i> Conectado al anfitrión</p>
+                    <p class="pulse-text"><i class="fas fa-link"></i> Esperando al anfitrión...</p>
                 </div>
             </div>
         </section>

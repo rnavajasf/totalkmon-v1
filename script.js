@@ -12,10 +12,13 @@ let currentJudgeId = null;
 let currentClashId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
 let adminTapCount = 0;
-// PARTY MODE
+
+// PARTY MODE STATE
 let currentRoomId = null;
 let isHost = false;
 let roomSubscription = null;
+let selectedGameMode = 'classic';
+let myRole = 'civilian';
 
 // SONIDO
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -29,50 +32,114 @@ function playSfx(type) {
     else if (type === 'success') { [440, 554, 659].forEach((f, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.001, now + 0.5 + (i*0.1)); o.start(now); o.stop(now + 0.5); }); }
 }
 
-// MODO FIESTA (REALTIME)
+// ==========================================
+// MODO FIESTA & IMPOSTOR
+// ==========================================
+function selectGameMode(mode) {
+    playSfx('click');
+    selectedGameMode = mode;
+    document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('mode-' + mode).classList.add('selected');
+}
+
 async function createRoom() {
     if(!currentUser.id) return alert("Espera a que cargue tu perfil.");
     playSfx('click');
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "¡Esperando al anfitrión!", current_card_category: "Sala Lista" });
+    
+    // Crear sala con MODO
+    const { error } = await db.from('rooms').insert({ 
+        id: code, 
+        host_id: currentUser.id, 
+        current_card_text: "¡Sala Creada!", 
+        current_card_category: "Esperando...",
+        gamemode: selectedGameMode
+    });
+    
     if(error) return alert("Error al crear sala.");
-    currentRoomId = code; isHost = true; enterPartyMode(code);
+    
+    // Unirme como participante
+    await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
+    
+    currentRoomId = code; isHost = true; enterPartyMode(code, selectedGameMode);
 }
+
 async function joinRoom() {
     const code = document.getElementById('join-code').value.toUpperCase().trim();
-    if(code.length !== 4) return alert("Código de 4 letras.");
+    if(code.length !== 4) return alert("Código incorrecto.");
     playSfx('click');
+    
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
     if(!data) return alert("Sala no encontrada.");
-    currentRoomId = code; isHost = false; enterPartyMode(code);
+    
+    // Unirme
+    await db.from('room_participants').insert({ room_id: code, user_id: currentUser.id, role: 'civilian' });
+
+    currentRoomId = code; isHost = false; 
+    enterPartyMode(code, data.gamemode);
 }
-function enterPartyMode(code) {
+
+function enterPartyMode(code, mode) {
     document.getElementById('party-lobby').style.display = 'none';
     document.getElementById('party-active').style.display = 'block';
     document.getElementById('display-room-code').innerText = code;
     
-    if(isHost) { document.getElementById('host-controls').style.display = 'block'; document.getElementById('guest-controls').style.display = 'none'; } 
-    else { document.getElementById('host-controls').style.display = 'none'; document.getElementById('guest-controls').style.display = 'block'; }
+    // Configurar interfaz según modo
+    selectedGameMode = mode;
+    document.getElementById('party-card-classic').style.display = mode === 'classic' ? 'flex' : 'none';
+    document.getElementById('party-card-imposter').style.display = mode === 'imposter' ? 'flex' : 'none';
 
+    if(isHost) { 
+        document.getElementById('host-controls').style.display = 'block'; 
+        document.getElementById('guest-controls').style.display = 'none'; 
+    } else { 
+        document.getElementById('host-controls').style.display = 'none'; 
+        document.getElementById('guest-controls').style.display = 'block'; 
+    }
+
+    // SUSCRIPCIÓN REALTIME
     roomSubscription = db.channel('room-'+code)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, (payload) => {
-        updatePartyCard(payload.new.current_card_text, payload.new.current_card_category);
+        handleRoomUpdate(payload.new);
     })
     .subscribe();
 
-    if(!isHost) { db.from('rooms').select('*').eq('id', code).single().then(({data}) => { if(data) updatePartyCard(data.current_card_text, data.current_card_category); }); }
+    // Cargar estado inicial
+    if(!isHost) { 
+        db.from('rooms').select('*').eq('id', code).single().then(({data}) => { 
+            if(data) handleRoomUpdate(data);
+        });
+    }
 }
-function updatePartyCard(text, category) {
-    const card = document.getElementById('party-card-visual');
-    const inner = card.querySelector('.card-inner');
-    
-    // EFECTO VISUAL (FLASH)
-    card.classList.remove('flash-animation');
-    void card.offsetWidth; // Trigger reflow
-    card.classList.add('flash-animation');
-    if(navigator.vibrate) navigator.vibrate([50, 50, 50]); // Vibración doble
 
-    playSfx('swoosh');
+async function handleRoomUpdate(roomData) {
+    // Si ha cambiado el modo de juego
+    if(roomData.gamemode !== selectedGameMode) {
+        selectedGameMode = roomData.gamemode;
+        document.getElementById('party-card-classic').style.display = selectedGameMode === 'classic' ? 'flex' : 'none';
+        document.getElementById('party-card-imposter').style.display = selectedGameMode === 'imposter' ? 'flex' : 'none';
+    }
+
+    // LÓGICA CLÁSICA
+    if(selectedGameMode === 'classic') {
+        updateClassicCard(roomData.current_card_text, roomData.current_card_category);
+    } 
+    // LÓGICA IMPOSTOR
+    else if(selectedGameMode === 'imposter') {
+        // Averiguar mi rol actual
+        if(currentUser.id === roomData.imposter_id) {
+            updateImposterCard("🤫 ERES EL IMPOSTOR", "Disimula y miente");
+        } else {
+            // Si soy civil, veo la palabra secreta (usamos current_card_text como palabra)
+            updateImposterCard(roomData.current_card_text, "Palabra Secreta");
+        }
+    }
+}
+
+function updateClassicCard(text, category) {
+    const card = document.getElementById('party-card-classic');
+    const inner = card.querySelector('.card-inner');
+    triggerFlash(card);
     inner.style.opacity = '0';
     setTimeout(() => {
         document.getElementById('party-text').innerText = text;
@@ -80,14 +147,67 @@ function updatePartyCard(text, category) {
         inner.style.opacity = '1';
     }, 200);
 }
-async function partyNextQuestion() {
-    if(!isHost) return;
-    const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
-    playSfx('click');
-    await db.from('rooms').update({ current_card_text: random.text, current_card_category: random.category }).eq('id', currentRoomId);
+
+function updateImposterCard(mainText, subText) {
+    const card = document.getElementById('party-card-imposter');
+    triggerFlash(card);
+    document.getElementById('imposter-role-text').innerText = mainText;
+    // Ocultar al principio para suspense
+    document.getElementById('imposter-role-text').style.filter = 'blur(10px)';
 }
+
+function triggerFlash(element) {
+    element.classList.remove('flash-animation');
+    void element.offsetWidth;
+    element.classList.add('flash-animation');
+    playSfx('swoosh');
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+}
+
+// CONTROL DEL ANFITRIÓN
+async function partyNextRound() {
+    if(!isHost) return;
+    playSfx('click');
+
+    const random = allQuestions[Math.floor(Math.random() * allQuestions.length)];
+
+    if(selectedGameMode === 'classic') {
+        await db.from('rooms').update({ 
+            current_card_text: random.text, 
+            current_card_category: random.category 
+        }).eq('id', currentRoomId);
+    } 
+    else if(selectedGameMode === 'imposter') {
+        // 1. Obtener participantes
+        const { data: participants } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
+        
+        if(!participants || participants.length < 2) {
+             // Modo debug si estás solo, te eliges a ti mismo para probar
+             const imposter = currentUser.id;
+             await db.from('rooms').update({
+                current_card_text: random.text, // Usamos la pregunta como "Palabra Secreta"
+                imposter_id: imposter,
+                game_state: 'playing'
+             }).eq('id', currentRoomId);
+        } else {
+            // Elegir impostor al azar
+            const imposter = participants[Math.floor(Math.random() * participants.length)].user_id;
+            
+            await db.from('rooms').update({
+                current_card_text: random.text, 
+                imposter_id: imposter,
+                game_state: 'playing'
+            }).eq('id', currentRoomId);
+        }
+    }
+}
+
 function exitRoom() {
     if(roomSubscription) db.removeChannel(roomSubscription);
+    // Borrarme de la sala
+    if(currentRoomId && currentUser.id) {
+        db.from('room_participants').delete().match({ room_id: currentRoomId, user_id: currentUser.id });
+    }
     currentRoomId = null; isHost = false;
     document.getElementById('party-lobby').style.display = 'block';
     document.getElementById('party-active').style.display = 'none';
@@ -142,6 +262,7 @@ async function initUser() {
 }
 async function syncProfileToCloud() { if(currentUser.id) await db.from('profiles').update({ username: currentUser.name, avatar: currentUser.avatar, streak: currentUser.streak, votes_cast: currentUser.votes }).eq('id', currentUser.id); }
 function checkStreakCloud(d) { const t=new Date().toISOString().split('T')[0]; const l=d.last_visit?d.last_visit.split('T')[0]:null; if(l!==t) { const y=new Date(); y.setDate(y.getDate()-1); if(l===y.toISOString().split('T')[0]) currentUser.streak++; else currentUser.streak=1; db.from('profiles').update({last_visit:new Date().toISOString(), streak:currentUser.streak}).eq('id',currentUser.id); updateProfileUI(); } }
+
 async function fetchQuestions() { const {data}=await db.from('questions').select('*').limit(50); if(data) allQuestions=data; else allQuestions=[{text:"Hola",category:"Inicio"}]; nextQuestion(); }
 function nextQuestion() { 
     let pool=allQuestions; if(currentCategory!=='aleatorio') pool=allQuestions.filter(q=>q.category.toLowerCase()===currentCategory.toLowerCase()); if(pool.length===0) pool=allQuestions;
