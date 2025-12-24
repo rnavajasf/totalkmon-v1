@@ -31,9 +31,50 @@ function playSfx(type) {
         gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
         osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
+    else if (type === 'success') { // Sonido especial para racha o éxito
+        [440, 554, 659].forEach((f, i) => {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination); o.frequency.value = f;
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5 + (i*0.1));
+            o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.5);
+        });
+    }
 }
 
-// 1. ORÁCULO
+// 1. RACHAS (STREAKS)
+function checkStreak() {
+    const today = new Date().toISOString().split('T')[0];
+    const lastVisit = localStorage.getItem('lastVisit');
+    let streak = parseInt(localStorage.getItem('streak') || 0);
+
+    // Si es la primera vez que entra HOY
+    if (lastVisit !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (lastVisit === yesterdayStr) {
+            streak++; // Racha continúa
+            setTimeout(() => playSfx('success'), 500); // Sonido premio
+        } else {
+            streak = 1; // Racha rota o empieza
+        }
+        
+        localStorage.setItem('lastVisit', today);
+        localStorage.setItem('streak', streak);
+    }
+
+    // Actualizar UI
+    const badge = document.getElementById('streak-badge');
+    const count = document.getElementById('streak-count');
+    
+    if (streak > 0) {
+        badge.style.display = 'flex';
+        count.innerText = streak;
+    }
+}
+
+// 2. ORÁCULO
 async function fetchQuestions() {
     const { data } = await db.from('questions').select('*');
     if(data && data.length > 0) allQuestions = data;
@@ -46,7 +87,6 @@ function nextQuestion() {
     if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
     if(pool.length === 0) pool = allQuestions;
     
-    // Animación simple de opacidad
     const cardContent = document.querySelector('.card-inner');
     cardContent.style.opacity = '0';
     
@@ -61,13 +101,12 @@ function nextQuestion() {
 function setCategory(cat, btn) {
     playSfx('click');
     currentCategory = cat;
-    // Actualizar Chips
     document.querySelectorAll('.topic-chip').forEach(b => b.classList.remove('active'));
     if(btn) btn.classList.add('active');
     nextQuestion();
 }
 
-// 2. DILEMA
+// 3. DILEMA
 async function loadClash() {
     const today = new Date().toISOString().split('T')[0];
     let { data } = await db.from('clashes').select('*').eq('publish_date', today);
@@ -118,7 +157,7 @@ function shareClash() {
     }
 }
 
-// 3. JUICIO
+// 4. JUICIO
 async function fetchJudge() {
     const { data } = await db.from('suggestions').select('*').limit(5);
     if (data && data.length > 0) {
@@ -164,11 +203,9 @@ async function sendSuggestion() {
 
 function switchTab(t, el) {
     playSfx('click');
-    // Active Dock Icon
     document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
     if(el) el.classList.add('active');
     
-    // Switch View
     document.getElementById('oracle-section').classList.remove('active-section');
     document.getElementById('clash-section').classList.remove('active-section');
     document.getElementById('judgment-section').classList.remove('active-section');
@@ -190,4 +227,6 @@ for(let i=0;i<20;i++){
     pc.appendChild(p);
 }
 
+// INICIO DE LA APP
+checkStreak();
 fetchQuestions();

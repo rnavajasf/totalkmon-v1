@@ -8,10 +8,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050a14">
     
-    <title>Totalkmon</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" href="icon.png">
+    
+    <title>Totalkmon</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -22,6 +24,12 @@
     <div class="particles" id="particles"></div>
 
     <header onclick="playSfx('click')">
+        <div class="header-top">
+            <div class="streak-badge" id="streak-badge" style="display: none;">
+                <i class="fas fa-fire"></i> <span id="streak-count">1</span>
+            </div>
+        </div>
+        
         <div class="logo-container">
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 95C74.8528 95 95 74.8528 95 50C95 25.1472 74.8528 5 50 5C25.1472 5 5 25.1472 5 50C5 74.8528 25.1472 95 50 95Z" stroke="#FFBF00" stroke-width="2"/>

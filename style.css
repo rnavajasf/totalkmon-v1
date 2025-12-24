@@ -26,16 +26,36 @@ body {
 @keyframes float { 0% { transform: translateY(110vh); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(-10vh); opacity: 0; } }
 
 /* HEADER */
-header { padding-top: 40px; padding-bottom: 10px; text-align: center; z-index: 10; flex-shrink: 0; }
+header { padding-top: 40px; padding-bottom: 10px; text-align: center; z-index: 10; flex-shrink: 0; position: relative; }
 .logo-container { width: 50px; height: 50px; margin: 0 auto; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
 h1 { font-family: 'Cinzel', serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--gold); }
+
+/* ESTILOS DE RACHA (FUEGO) */
+.header-top { position: absolute; top: 40px; right: 20px; z-index: 20; }
+.streak-badge {
+    background: rgba(255, 69, 0, 0.1); 
+    border: 1px solid #FF4500;
+    color: #FF4500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.2);
+    animation: pulseFire 2s infinite;
+}
+@keyframes pulseFire {
+    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 69, 0, 0.2); }
+    50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 69, 0, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 69, 0, 0.2); }
+}
 
 /* MAIN STAGE (SCROLLABLE) */
 .main-stage { 
     flex-grow: 1; 
-    overflow-y: auto; /* El scroll ocurre aquí dentro */
+    overflow-y: auto; 
     padding: 20px; 
-    padding-bottom: calc(90px + var(--safe-bottom)); /* Espacio para el Dock */
+    padding-bottom: calc(90px + var(--safe-bottom)); 
     display: flex; flex-direction: column; align-items: center;
     width: 100%; max-width: 600px; margin: 0 auto;
     position: relative; z-index: 10;
@@ -47,13 +67,12 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 
 /* TOPIC SLIDER (Horizontales) */
 .topic-slider-container {
-    width: 100vw; margin-left: -20px; /* Romper el padding del container */
+    width: 100vw; margin-left: -20px; 
     padding: 10px 20px; 
     overflow-x: auto; 
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     margin-bottom: 20px;
-    /* Hide scrollbar */
     scrollbar-width: none; -ms-overflow-style: none;
 }
 .topic-slider-container::-webkit-scrollbar { display: none; }
@@ -124,7 +143,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .btn-approve { border: 2px solid var(--green); color: var(--green); background: rgba(46,213,115,0.1); }
 .btn-judge:active { transform: scale(0.9); }
 
-/* --- DOCK DE NAVEGACIÓN (APP STYLE) --- */
+/* DOCK DE NAVEGACIÓN */
 .bottom-dock {
     position: fixed; bottom: 0; left: 0; width: 100%;
     background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px);
@@ -148,9 +167,9 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
     width: 55px; height: 55px;
     background: var(--gold); color: #000;
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; margin-top: -30px; /* Flotando */
+    font-size: 1.5rem; margin-top: -30px; 
     box-shadow: 0 0 20px rgba(255,215,0,0.3);
-    border: 4px solid var(--bg-deep); /* Corte limpio */
+    border: 4px solid var(--bg-deep); 
     cursor: pointer; transition: 0.2s;
 }
 .dock-fab:active { transform: scale(0.95); }
