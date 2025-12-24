@@ -8,7 +8,7 @@
     --red: #FF4757;
     --green: #2ED573;
     --cyan: #00e5ff;
-    --blue: #3742fa; /* IMPORTANTE PARA VERSUS */
+    --blue: #3742fa;
     --safe-bottom: env(safe-area-inset-bottom);
 }
 
@@ -41,7 +41,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .active-section { display: block; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* COMPONENTS */
+/* CARDS */
 .topic-slider-container { width: 100vw; margin-left: -20px; padding: 10px 20px; overflow-x: auto; white-space: nowrap; margin-bottom: 20px; scrollbar-width: none; }
 .topic-slider-container::-webkit-scrollbar { display: none; }
 .topic-slider { display: inline-flex; gap: 10px; padding-right: 40px; }
@@ -55,7 +55,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .question-content { font-size: 1.6rem; line-height: 1.4; font-weight: 500; margin-bottom: 30px; }
 .hint { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
 
-/* DILEMA */
+/* DILEMA UI */
 .section-title { text-align: center; margin-bottom: 30px; }
 .section-title h2 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.4rem; }
 .section-title p { font-size: 0.8rem; opacity: 0.6; }
@@ -67,7 +67,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .opt-percent { font-weight: 800; font-size: 1.1rem; opacity: 0; } .voted .opt-percent { opacity: 1; }
 .vs-badge { text-align: center; font-size: 0.8rem; color: #555; font-weight: 900; margin: -10px 0; z-index: 5; }
 
-/* SHARE & ADMIN */
+/* SHARED */
 .share-btn { background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-dim); padding: 12px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; margin-top: 15px; display: none; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; }
 .voted .share-btn { display: flex; }
 .mini-share-btn { margin-top: 15px; background: rgba(255,255,255,0.05); color: #888; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
@@ -75,14 +75,13 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
 .admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
-/* FIESTA - GAME SELECTOR */
+/* FIESTA STYLES */
 .gamemode-selector { display: flex; gap: 10px; margin-bottom: 20px; }
 .mode-option { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid transparent; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; opacity: 0.6; }
 .mode-option i { font-size: 1.5rem; }
 .mode-option span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 .mode-option.selected { background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan); opacity: 1; transform: scale(1.05); }
 
-/* VERSUS MODE */
 .versus-title { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.4; color: #fff; }
 .versus-assignment { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
 .versus-assignment h3 { font-size: 1.5rem; margin-top: 5px; color: var(--gold); }
@@ -91,7 +90,6 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .team-b-style { border-color: var(--blue) !important; background: rgba(55, 66, 250, 0.1) !important; }
 .team-b-style h3 { color: var(--blue) !important; }
 
-/* FIESTA */
 .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
 .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .divider span { padding: 0 10px; }
@@ -107,7 +105,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .flash-animation { animation: flash 0.5s ease-out; }
 @keyframes flash { 0% { background-color: rgba(0, 229, 255, 0.5); transform: scale(1.05); } 100% { background-color: var(--glass); transform: scale(1); } }
 
-/* PERFIL & OTROS */
+/* PERFIL */
 .profile-card { background: var(--glass); border: 1px solid var(--gold-dim); border-radius: 20px; padding: 30px; text-align: center; margin-bottom: 20px; width: 100%; }
 .avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; cursor: pointer; }
 .avatar-circle { width: 100%; height: 100%; background: rgba(255,215,0,0.1); border: 2px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; transition: 0.3s; }
@@ -123,6 +121,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .stat-value { font-size: 1.5rem; font-weight: 800; color: white; }
 .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
 
+/* DOCK */
 .judge-badge { background: var(--red); color: white; padding: 4px 10px; border-radius: 4px; font-family: 'Cinzel', serif; font-size: 0.7rem; margin-bottom: 15px; }
 .judge-actions { display: flex; gap: 20px; margin-top: 30px; }
 .btn-judge { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
@@ -136,6 +135,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .dock-fab { width: 55px; height: 55px; background: var(--gold); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-top: -30px; box-shadow: 0 0 20px rgba(255,215,0,0.3); border: 4px solid var(--bg-deep); cursor: pointer; transition: 0.2s; }
 .dock-fab:active { transform: scale(0.95); }
 
+/* MODALS */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
 .modal-content { background: #0b1e3b; padding: 30px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; border: 1px solid var(--gold-dim); position: relative; }
 .close-modal { position: absolute; top: 15px; right: 20px; color: white; font-size: 1.5rem; }

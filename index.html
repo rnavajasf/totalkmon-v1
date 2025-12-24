@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050a14">
@@ -28,7 +27,7 @@
     <header onclick="playSfx('click')">
         <div class="header-top">
             <div class="streak-badge" id="streak-badge" style="display: none;" onclick="openStreakModal(); event.stopPropagation();">
-                <i class="fas fa-fire"></i> <span id="streak-count">1</span>
+                <i class="fas fa-fire"></i> <span id="streak-count">0</span>
             </div>
         </div>
         <div class="logo-container">
@@ -116,9 +115,7 @@
                     </div>
                     <button class="btn-submit" onclick="createRoom()">Crear Sala</button>
                 </div>
-                
                 <div class="divider"><span>O</span></div>
-
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
                     <h3>🚀 Unirse</h3>
                     <input type="text" id="join-code" placeholder="Código (ej: A1B2)" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
@@ -134,14 +131,12 @@
                 </div>
 
                 <div class="card-container" style="min-height: 300px;">
-                    
                     <div class="card party-card" id="party-card-classic">
                         <div class="card-inner">
                             <span class="category-pill" id="party-cat">Esperando...</span>
-                            <p class="question-content" id="party-text">El anfitrión elegirá la pregunta.</p>
+                            <p class="question-content" id="party-text">El anfitrión elegirá.</p>
                         </div>
                     </div>
-
                     <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);">
                         <div class="card-inner">
                             <span class="category-pill" id="versus-topic">DEBATE</span>
@@ -152,18 +147,14 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;">
                         <div class="card-inner">
                             <i class="fas fa-fingerprint" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
                             <span class="category-pill" style="background: #ff0055; color: white;">MISIÓN SECRETA</span>
-                            <p class="question-content" id="imposter-role-text" style="filter: blur(5px); cursor: pointer;" onclick="this.style.filter='none'">
-                                Toca para revelar
-                            </p>
+                            <p class="question-content" id="imposter-role-text" style="filter: blur(5px); cursor: pointer;" onclick="this.style.filter='none'">Toca para revelar</p>
                             <p class="hint">Mantenlo en secreto</p>
                         </div>
                     </div>
-
                 </div>
 
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
@@ -172,7 +163,6 @@
                     </button>
                     <p style="text-align: center; font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">Tú controlas la partida.</p>
                 </div>
-                
                 <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;">
                     <p class="pulse-text"><i class="fas fa-link"></i> Esperando al anfitrión...</p>
                 </div>

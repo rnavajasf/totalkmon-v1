@@ -2,15 +2,15 @@
 // 1. CONFIGURACIÓN Y SEGURIDAD
 // ==========================================
 window.onerror = function(msg, url, line) {
-    alert("Error Detectado: " + msg + "\nLínea: " + line);
+    console.error("Error Detectado: " + msg + "\nLínea: " + line);
 };
 
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 
-// Verificación de librería
+// Check Supabase
 if (typeof supabase === 'undefined') {
-    alert("Error Crítico: No se pudo cargar Supabase. Comprueba tu conexión.");
+    alert("Error Crítico: No se pudo cargar la librería Supabase. Recarga la página.");
     throw new Error("Supabase undefined");
 }
 
@@ -533,4 +533,69 @@ function updateProfileUI() {
     let t = "Novato";
     if (l > 5) t = "Juez";
     if (l > 20) t = "Oráculo";
-    if (l > 5
+    if (l > 50) t = "Dios";
+    document.getElementById('profile-level').innerText = `Nivel ${l}: ${t}`;
+}
+function saveProfile() {
+    const n = document.getElementById('profile-name').value;
+    if (n.trim() === "") return;
+    currentUser.name = n;
+    updateProfileUI();
+    syncProfileToCloud();
+}
+function toggleAvatarEdit() {
+    const s = document.getElementById('avatar-selector');
+    s.style.display = s.style.display === 'none' ? 'grid' : 'none';
+    playSfx('click');
+}
+function setAvatar(e) {
+    currentUser.avatar = e;
+    document.getElementById('avatar-selector').style.display = 'none';
+    playSfx('success');
+    updateProfileUI();
+    syncProfileToCloud();
+}
+async function sendSuggestion() {
+    const t = document.getElementById('sug-text').value;
+    const c = document.getElementById('sug-cat').value;
+    if (!t) return;
+    await db.from('suggestions').insert([{ text: t, category: c, votes: 0 }]);
+    alert("Enviado.");
+    closeModal();
+    document.getElementById('sug-text').value = "";
+}
+function switchTab(t, el) {
+    playSfx('click');
+    document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+    if (el) el.classList.add('active');
+    ['oracle', 'clash', 'party', 'judgment', 'profile', 'admin'].forEach(s => {
+        const sec = document.getElementById(s + '-section');
+        if (sec) sec.classList.remove('active-section');
+    });
+    const target = document.getElementById(t + '-section');
+    if (target) target.classList.add('active-section');
+    if (t === 'clash') loadClash();
+    if (t === 'judgment') fetchJudge();
+    if (t === 'profile') updateProfileUI();
+}
+function openModal() { document.getElementById('suggestionModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('suggestionModal').style.display = 'none'; }
+function openStreakModal() {
+    document.getElementById('modal-streak-count').innerText = currentUser.streak;
+    document.getElementById('streakModal').style.display = 'flex';
+    playSfx('click');
+}
+function closeStreakModal() { document.getElementById('streakModal').style.display = 'none'; }
+
+const pc = document.getElementById('particles');
+for (let i = 0; i < 20; i++) {
+    let p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.width = p.style.height = (Math.random() * 5 + 2) + 'px';
+    p.style.animationDelay = Math.random() * 5 + 's';
+    p.style.animationDuration = (Math.random() * 10 + 15) + 's';
+    pc.appendChild(p);
+}
+
+document.addEventListener('DOMContentLoaded', () => { initUser(); fetchQuestions(); });
