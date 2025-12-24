@@ -1,116 +1,108 @@
-// =================================================================
-// 1. CONFIGURACIÓN
-// =================================================================
+// ==========================================
+// 1. CONFIGURACIÓN (TUS CLAVES REALES)
+// ==========================================
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// =================================================================
-// 2. DICCIONARIOS LOCALES
-// =================================================================
-const imposterWords = ["Hospital", "Cementerio", "Escuela", "Cárcel", "Playa", "Cine", "Discoteca", "Gimnasio", "Aeropuerto", "Supermercado", "Restaurante", "Zoológico", "Hotel", "Teléfono", "Cuchara", "Inodoro", "Cama", "Reloj", "Pizza", "Sushi", "Hamburguesa", "Chocolate", "Perro", "Gato", "León", "Policía", "Médico", "Bombero"];
+// ==========================================
+// 2. DICCIONARIOS DE DATOS
+// ==========================================
+const imposterWords = ["Hospital", "Escuela", "Playa", "Cine", "Gimnasio", "Aeropuerto", "Supermercado", "Restaurante", "Zoológico", "Hotel", "Teléfono", "Cuchara", "Inodoro", "Cama", "Reloj", "Pizza", "Sushi", "Hamburguesa", "Chocolate", "Plátano", "Perro", "Gato", "León", "Policía", "Médico", "Bombero"];
 const debateTopics = [
     { title: "Tortilla de Patatas", a: "CON Cebolla", b: "SIN Cebolla" },
     { title: "Pizza", a: "Con Piña", b: "Sin Piña" },
     { title: "Dinero", a: "Da la felicidad", b: "No la da" },
     { title: "Redes Sociales", a: "Buenas", b: "Tóxicas" },
-    { title: "Cine", a: "Doblado", b: "V.O." },
-    { title: "Vacaciones", a: "Playa", b: "Montaña" }
+    { title: "Cine", a: "Doblado", b: "V.O." }
 ];
 
-// =================================================================
-// 3. ESTADO
-// =================================================================
-let currentUser = { id: localStorage.getItem('u_id'), name: localStorage.getItem('u_name')||'Anónimo', avatar: localStorage.getItem('u_av')||'🦊', streak: 0, votes: 0 };
-let currentRoomId = null;
-let isHost = false;
-let roomSubscription = null;
-let selectedGameMode = 'classic';
+// ==========================================
+// 3. ESTADO GLOBAL
+// ==========================================
+let currentUser = {
+    id: localStorage.getItem('user_uuid'),
+    name: localStorage.getItem('profile_name') || 'Anónimo',
+    avatar: localStorage.getItem('profile_avatar') || '🦊',
+    streak: parseInt(localStorage.getItem('streak') || 0),
+    votes: parseInt(localStorage.getItem('profile_votes') || 0)
+};
+
 let allQuestions = [];
 let currentCategory = 'aleatorio';
 let currentClashId = null;
 let currentJudgeId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
 
-// =================================================================
-// 4. ARRANQUE
-// =================================================================
+// PARTY STATE
+let currentRoomId = null;
+let isHost = false;
+let roomSubscription = null;
+let selectedGameMode = 'classic';
+let adminTapCount = 0;
+
+// ==========================================
+// 4. ARRANQUE (DELEGACIÓN DE EVENTOS)
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
-    // Verificar si las librerías cargaron
-    if(typeof supabase === 'undefined') return alert("Error de red: Supabase no cargó.");
+    console.log("Iniciando App V33...");
     
+    // 1. CARGA DE DATOS
     updateProfileUI(); 
     await initUser();
     await fetchQuestions(); 
-    setupEventListeners();
+
+    // 2. DELEGACIÓN DE EVENTOS (ROBUSTO)
+    // Esto asegura que los clics funcionen incluso si el DOM cambia
+    document.body.addEventListener('click', (e) => {
+        const target = e.target.closest('button, .interactive-card, .topic-chip, .mode-option');
+        if (!target) return;
+
+        // ORÁCULO
+        if (target.id === 'oracle-card-trigger') { nextQuestion(); playSfx('swoosh'); }
+        if (target.classList.contains('topic-chip')) { setCategory(target.dataset.cat, target); }
+        
+        // DILEMA
+        if (target.id === 'btn-vote-a') voteClash('a');
+        if (target.id === 'btn-vote-b') voteClash('b');
+        if (target.id === 'btn-share-clash') shareScreenshot('clash');
+
+        // PARTY (LOBBY)
+        if (target.id === 'btn-create-room') createRoom();
+        if (target.id === 'btn-join-room') joinRoom();
+        if (target.classList.contains('mode-option')) selectGameMode(target.dataset.mode);
+
+        // PARTY (JUEGO)
+        if (target.id === 'btn-next-round') partyNextRound(); // <--- AQUÍ ESTABA EL PROBLEMA
+        if (target.id === 'btn-exit-room') exitRoom();
+
+        // OTROS
+        if (target.id === 'btn-open-suggestion') openModal();
+        if (target.id === 'btn-close-sug') closeModal();
+        if (target.id === 'btn-send-sug') sendSuggestion();
+        if (target.classList.contains('dock-item')) switchTab(target.dataset.tab, target);
+        if (target.id === 'profile-avatar-wrapper') toggleAvatarEdit();
+    });
 });
 
-function setupEventListeners() {
-    // Dock
-    document.querySelectorAll('.dock-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab, btn)));
-    
-    // Oracle
-    document.querySelectorAll('.topic-chip').forEach(chip => {
-        chip.addEventListener('click', () => setCategory(chip.dataset.cat, chip));
-    });
-    document.querySelector('#oracle-card').addEventListener('click', () => { nextQuestion(); playSfx('swoosh'); });
-
-    // Party (CRÍTICO: Eventos separados del HTML)
-    document.getElementById('btn-create-room').addEventListener('click', createRoom);
-    document.getElementById('btn-join-room').addEventListener('click', joinRoom);
-    document.getElementById('btn-next-round').addEventListener('click', partyNextRound); // AQUÍ ESTABA EL FALLO ANTES
-    document.getElementById('btn-exit-room').addEventListener('click', exitRoom);
-    document.querySelectorAll('.mode-option').forEach(opt => opt.addEventListener('click', () => selectGameMode(opt.dataset.mode)));
-
-    // Dilema
-    document.getElementById('btn-vote-a').addEventListener('click', () => voteClash('a'));
-    document.getElementById('btn-vote-b').addEventListener('click', () => voteClash('b'));
-    document.getElementById('btn-share-clash').addEventListener('click', () => shareScreenshot('clash'));
-
-    // Otros
-    document.getElementById('btn-open-suggestion').addEventListener('click', openModal);
-    document.getElementById('btn-close-sug').addEventListener('click', closeModal);
-    document.getElementById('btn-send-sug').addEventListener('click', sendSuggestion);
-    document.getElementById('profile-avatar-wrapper').addEventListener('click', toggleAvatarEdit);
+// SONIDO (Protected)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSfx(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    try {
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if (type === 'click') { osc.frequency.setValueAtTime(600, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); } 
+        else if (type === 'swoosh') { osc.type = 'triangle'; gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.15); osc.start(now); osc.stop(now + 0.15); }
+    } catch(e){}
 }
 
-// =================================================================
-// 5. ORÁCULO
-// =================================================================
-async function fetchQuestions() { 
-    const { data } = await db.from('questions').select('*').limit(1000); 
-    if(data && data.length > 0) allQuestions = data; 
-    else allQuestions = [{text:"Hola", category:"Inicio"}]; 
-    nextQuestion(); 
-}
-
-function nextQuestion() { 
-    let pool = [];
-    if (currentCategory.toLowerCase() === 'aleatorio') {
-        pool = allQuestions;
-    } else {
-        pool = allQuestions.filter(q => q.category && q.category.toLowerCase() === currentCategory.toLowerCase());
-    }
-    if (pool.length === 0) pool = allQuestions;
-    
-    const r = pool[Math.floor(Math.random() * pool.length)]; 
-    document.getElementById('q-text').innerText = r.text;
-    document.getElementById('q-cat').innerText = r.category;
-}
-
-function setCategory(c, btn) { 
-    playSfx('click'); 
-    currentCategory = c; 
-    document.querySelectorAll('.topic-chip').forEach(x => x.classList.remove('active')); 
-    btn.classList.add('active'); 
-    nextQuestion(); 
-}
-
-// =================================================================
-// 6. MODO FIESTA (FIXED)
-// =================================================================
+// ==========================================
+// 5. MODO FIESTA (LÓGICA V33)
+// ==========================================
 function selectGameMode(mode) {
     playSfx('click');
     selectedGameMode = mode;
@@ -124,13 +116,15 @@ async function createRoom() {
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
     
     // Crear Sala
-    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "Sala Lista", current_card_category: "Esperando...", gamemode: selectedGameMode, game_state: 'waiting' });
-    if(error) return alert("Error DB: " + error.message);
-
-    // Unirme (Host)
-    await db.from('room_participants').upsert({ room_id: code, user_id: currentUser.id, role: 'spectator' }, { onConflict: 'room_id, user_id' });
+    await db.from('rooms').insert({ 
+        id: code, host_id: currentUser.id, 
+        current_card_text: "Sala Creada", current_card_category: "Esperando...", 
+        gamemode: selectedGameMode, game_state: 'waiting' 
+    });
     
-    currentRoomId = code; isHost = true; enterPartyMode(code);
+    // Join Host
+    await db.from('room_participants').upsert({ room_id: code, user_id: currentUser.id, role: 'spectator' }, { onConflict: 'room_id, user_id' });
+    currentRoomId = code; isHost = true; enterPartyMode(code, selectedGameMode);
 }
 
 async function joinRoom() {
@@ -139,113 +133,147 @@ async function joinRoom() {
     playSfx('click');
     
     const { data } = await db.from('rooms').select('*').eq('id', code).single();
-    if(!data) return alert("Sala no existe");
+    if(!data) return alert("Sala no encontrada");
     
     await db.from('room_participants').upsert({ room_id: code, user_id: currentUser.id, role: 'spectator' }, { onConflict: 'room_id, user_id' });
-    currentRoomId = code; isHost = false; selectedGameMode = data.gamemode;
-    enterPartyMode(code);
+    currentRoomId = code; isHost = false; 
+    enterPartyMode(code, data.gamemode);
 }
 
-function enterPartyMode(code) {
+function enterPartyMode(code, mode) {
     document.getElementById('party-lobby').style.display = 'none';
     document.getElementById('party-active').style.display = 'block';
     document.getElementById('display-room-code').innerText = code;
-    updateGameUI();
+    selectedGameMode = mode || 'classic';
+    updateGameUI(selectedGameMode);
 
-    if(isHost) { document.getElementById('host-controls').style.display = 'block'; document.getElementById('guest-controls').style.display = 'none'; }
+    if(isHost) { document.getElementById('host-controls').style.display = 'block'; document.getElementById('guest-controls').style.display = 'none'; } 
     else { document.getElementById('host-controls').style.display = 'none'; document.getElementById('guest-controls').style.display = 'block'; }
 
+    // Suscripción Realtime
     if(roomSubscription) db.removeChannel(roomSubscription);
     roomSubscription = db.channel('room-'+code)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, payload => {
-            handleRoomUpdate(payload.new);
-        })
-        .subscribe();
-        
-    db.from('rooms').select('*').eq('id', code).single().then(({data}) => { if(data) handleRoomUpdate(data); });
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${code}` }, (payload) => {
+        handleRoomUpdate(payload.new);
+    })
+    .subscribe();
+
+    // FETCH INICIAL
+    db.from('rooms').select('*').eq('id', code).single().then(({data}) => { 
+        if(data) handleRoomUpdate(data);
+    });
 }
 
-function updateGameUI() {
-    ['classic', 'imposter', 'versus'].forEach(m => document.getElementById('party-card-' + m).style.display = 'none');
-    document.getElementById('party-card-' + selectedGameMode).style.display = 'flex';
+function updateGameUI(mode) {
+    ['classic', 'imposter', 'versus'].forEach(m => {
+        const el = document.getElementById('party-card-' + m);
+        if(el) el.style.display = 'none';
+    });
+    const currentEl = document.getElementById('party-card-' + mode);
+    if(currentEl) currentEl.style.display = 'flex';
 }
 
-async function handleRoomUpdate(room) {
-    if(room.gamemode !== selectedGameMode) { selectedGameMode = room.gamemode; updateGameUI(); }
-    
-    const activeCard = document.getElementById('party-card-' + selectedGameMode);
-    activeCard.classList.remove('flash-animation'); void activeCard.offsetWidth; activeCard.classList.add('flash-animation');
-    playSfx('swoosh');
+async function handleRoomUpdate(roomData) {
+    if(roomData.gamemode !== selectedGameMode) {
+        selectedGameMode = roomData.gamemode;
+        updateGameUI(selectedGameMode);
+    }
+
+    triggerFlash(document.querySelector('.card-container'));
 
     if(selectedGameMode === 'classic') {
-        document.getElementById('party-text').innerText = room.current_card_text;
-        document.getElementById('party-cat').innerText = room.current_card_category;
-    }
+        document.getElementById('party-text').innerText = roomData.current_card_text;
+        document.getElementById('party-cat').innerText = roomData.current_card_category;
+    } 
     else if(selectedGameMode === 'imposter') {
-        const txt = document.getElementById('imposter-role-text');
-        txt.style.filter = 'blur(15px)';
-        if(currentUser.id === room.imposter_id) txt.innerText = "🤫 ERES EL IMPOSTOR";
-        else txt.innerText = room.current_card_text;
+        if(currentUser.id === roomData.imposter_id) updateImposterCard("🤫 ERES EL IMPOSTOR", "Disimula.");
+        else updateImposterCard(roomData.current_card_text, "Palabra Secreta");
     }
     else if(selectedGameMode === 'versus') {
-        document.getElementById('versus-main-text').innerText = room.current_card_text;
-        await fetchVersusRole(room.current_card_category);
+        updateVersusCard(roomData.current_card_text, roomData.current_card_category);
     }
 }
 
-async function fetchVersusRole(categoryStr) {
-    const { data } = await db.from('room_participants').select('role').match({room_id: currentRoomId, user_id: currentUser.id}).single();
-    const roleText = document.getElementById('versus-role-text');
-    const box = document.getElementById('versus-role-box');
-    const opts = categoryStr.split('|');
-    
-    box.classList.remove('team-a-style', 'team-b-style');
-    if(data && data.role === 'team_a') { box.classList.add('team-a-style'); roleText.innerText = "DEFENDER: " + (opts[0] || "A"); }
-    else if(data && data.role === 'team_b') { box.classList.add('team-b-style'); roleText.innerText = "DEFENDER: " + (opts[1] || "B"); }
-    else roleText.innerText = "ESPERANDO...";
+function updateImposterCard(mainText, subText) {
+    const textEl = document.getElementById('imposter-role-text');
+    textEl.innerText = mainText;
+    textEl.style.filter = 'blur(15px)';
+    document.querySelector('#party-card-imposter .hint').innerText = subText;
 }
 
-// HOST LOGIC (FIXED)
+async function updateVersusCard(title, optionsStr) {
+    if(!currentUser.id) return;
+    const parts = optionsStr ? optionsStr.split('|') : ["A", "B"];
+    document.getElementById('versus-main-text').innerText = title;
+    
+    // FETCH ROL DE LA BASE DE DATOS
+    const { data } = await db.from('room_participants').select('role').match({ room_id: currentRoomId, user_id: currentUser.id }).single();
+    
+    const box = document.getElementById('versus-role-box');
+    const roleText = document.getElementById('versus-role-text');
+    box.classList.remove('team-a-style', 'team-b-style');
+    
+    if(data && data.role === 'team_a') {
+        box.classList.add('team-a-style');
+        roleText.innerText = "DEFENDER: " + (parts[0] || "A");
+    } else if(data && data.role === 'team_b') {
+        box.classList.add('team-b-style');
+        roleText.innerText = "DEFENDER: " + (parts[1] || "B");
+    } else {
+        roleText.innerText = "ESPERANDO...";
+    }
+}
+
+function triggerFlash(el) {
+    if(!el) return;
+    el.classList.remove('flash-animation');
+    void el.offsetWidth;
+    el.classList.add('flash-animation');
+    playSfx('swoosh');
+}
+
+// CONTROL DEL HOST
 async function partyNextRound() {
     if(!isHost) return;
     playSfx('click');
-    
-    // Feedback visual en el botón
-    const btn = document.getElementById('btn-next-round');
-    btn.style.opacity = "0.5"; 
-    setTimeout(() => btn.style.opacity = "1", 300);
+    console.log("Avanzando ronda...");
 
     if(selectedGameMode === 'classic') {
-        const r = allQuestions[Math.floor(Math.random()*allQuestions.length)];
-        await db.from('rooms').update({ current_card_text: r.text, current_card_category: r.category }).eq('id', currentRoomId);
-    }
+        const r = allQuestions[Math.floor(Math.random() * allQuestions.length)];
+        await db.from('rooms').update({ 
+            current_card_text: r.text, 
+            current_card_category: r.category 
+        }).eq('id', currentRoomId);
+    } 
     else if(selectedGameMode === 'imposter') {
-        const word = imposterWords[Math.floor(Math.random()*imposterWords.length)];
+        const w = imposterWords[Math.floor(Math.random() * imposterWords.length)];
         const { data: ps } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
-        const imp = ps && ps.length > 0 ? ps[Math.floor(Math.random()*ps.length)].user_id : currentUser.id;
-        await db.from('rooms').update({ current_card_text: word, imposter_id: imp }).eq('id', currentRoomId);
+        let imp = currentUser.id;
+        if(ps && ps.length > 0) imp = ps[Math.floor(Math.random() * ps.length)].user_id;
+        await db.from('rooms').update({ current_card_text: w, imposter_id: imp }).eq('id', currentRoomId);
     }
     else if(selectedGameMode === 'versus') {
-        const topic = debateTopics[Math.floor(Math.random()*debateTopics.length)];
+        const d = debateTopics[Math.floor(Math.random() * debateTopics.length)];
+        // REPARTIR
         const { data: ps } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
         if(ps && ps.length > 0) {
-            for(let i=ps.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [ps[i], ps[j]] = [ps[j], ps[i]]; }
+            for (let i = ps.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ps[i], ps[j]] = [ps[j], ps[i]]; }
             const updates = ps.map((p, idx) => {
                 const team = idx % 2 === 0 ? 'team_a' : 'team_b';
-                return db.from('room_participants').update({ role: team }).match({room_id: currentRoomId, user_id: p.user_id});
+                return db.from('room_participants').update({ role: team }).match({ room_id: currentRoomId, user_id: p.user_id });
             });
             await Promise.all(updates);
         }
-        // Small delay to ensure roles are written
-        setTimeout(async () => {
-            await db.from('rooms').update({ current_card_text: topic.title, current_card_category: topic.a + "|" + topic.b }).eq('id', currentRoomId);
-        }, 150);
+        // LANZAR
+        await db.from('rooms').update({ 
+            current_card_text: d.title, 
+            current_card_category: `${d.a}|${d.b}` 
+        }).eq('id', currentRoomId);
     }
 }
 
 function exitRoom() {
     if(roomSubscription) db.removeChannel(roomSubscription);
-    if(currentRoomId) db.from('room_participants').delete().match({room_id: currentRoomId, user_id: currentUser.id});
     currentRoomId = null; isHost = false;
     document.getElementById('party-lobby').style.display = 'block';
     document.getElementById('party-active').style.display = 'none';
@@ -258,11 +286,11 @@ function exitRoom() {
 async function initUser() {
     if (!currentUser.id) {
         const { data } = await db.from('profiles').insert([{ username: currentUser.name, avatar: currentUser.avatar, last_visit: new Date().toISOString() }]).select().single();
-        if(data) { currentUser.id = data.id; localStorage.setItem('u_id', data.id); }
+        if(data) { currentUser.id = data.id; localStorage.setItem('user_uuid', data.id); }
     } else {
         const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
         if(data) { currentUser.streak = data.streak; currentUser.votes = data.votes_cast; updateProfileUI(); }
-        else { localStorage.removeItem('u_id'); currentUser.id = null; await initUser(); }
+        else { localStorage.removeItem('user_uuid'); currentUser.id = null; await initUser(); }
     }
 }
 function updateProfileUI() {
@@ -272,7 +300,7 @@ function updateProfileUI() {
     document.getElementById('stat-streak').innerText = currentUser.streak;
     document.getElementById('stat-votes').innerText = currentUser.votes;
 }
-function saveProfile() { currentUser.name = document.getElementById('profile-name').value; updateProfileUI(); if(currentUser.id) db.from('profiles').update({username:currentUser.name}).eq('id', currentUser.id); }
+function saveProfile() { currentUser.name = document.getElementById('profile-name').value; updateProfileUI(); if(currentUser.id) db.from('profiles').update({ username: currentUser.name }).eq('id', currentUser.id); }
 function toggleAvatarEdit() { const s=document.getElementById('avatar-selector'); s.style.display = s.style.display==='none'?'grid':'none'; }
 function setAvatar(e) { currentUser.avatar=e; document.getElementById('avatar-selector').style.display = 'none'; saveProfile(); }
 function switchTab(t, el) { 
@@ -282,6 +310,17 @@ function switchTab(t, el) {
     if(t==='clash') loadClash();
     if(t==='profile') updateProfileUI();
 }
+
+// DILEMA & ORACULO
+async function fetchQuestions() { const { data } = await db.from('questions').select('*').limit(1000); if(data) allQuestions = data; else allQuestions=[{text:"Hola",category:"Inicio"}]; nextQuestion(); }
+function nextQuestion() { 
+    let pool=allQuestions; 
+    if(currentCategory.toLowerCase()!=='aleatorio') pool=allQuestions.filter(q=>q.category && q.category.toLowerCase()===currentCategory.toLowerCase()); 
+    if(pool.length===0) pool=allQuestions;
+    const r=pool[Math.floor(Math.random()*pool.length)]; 
+    document.getElementById('q-text').innerText=r.text; document.getElementById('q-cat').innerText=r.category;
+}
+function setCategory(c, btn) { playSfx('click'); currentCategory=c; document.querySelectorAll('.topic-chip').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); nextQuestion(); }
 
 async function loadClash() {
     const t=new Date().toISOString().split('T')[0];
@@ -317,8 +356,4 @@ function closeModal() { document.getElementById('suggestionModal').style.display
 function openStreakModal() { document.getElementById('streakModal').style.display='flex'; playSfx('click'); }
 function closeStreakModal() { document.getElementById('streakModal').style.display='none'; }
 async function sendSuggestion() { const t=document.getElementById('sug-text').value; if(!t) return; await db.from('suggestions').insert([{text:t, category:'Mix', votes:0}]); alert("Enviado."); closeModal(); }
-function triggerAdminUnlock() { adminTapCount++; if(adminTapCount===5 && prompt("PIN")==="2025") switchTab('admin'); if(adminTapCount===5) adminTapCount=0; }
-async function adminCreateClash() { const a=document.getElementById('admin-opt-a').value; const b=document.getElementById('admin-opt-b').value; if(a&&b) { const t=new Date(); t.setDate(t.getDate()+1); await db.from('clashes').delete().eq('publish_date', t.toISOString().split('T')[0]); await db.from('clashes').insert({option_a:a, option_b:b, publish_date:t.toISOString().split('T')[0]}); alert("OK"); } }
-async function shareScreenshot(t) { alert("Captura guardada."); }
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playSfx(type) { if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{}); try{ const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);const t=audioCtx.currentTime;if(type==='click'){o.frequency.setValueAtTime(600,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.1);o.start(t);o.stop(t+0.1);}else{o.type='triangle';g.gain.setValueAtTime(0.05,t);g.gain.linearRampToValueAtTime(0,t+0.15);o.start(t);o.stop(t+0.15);}}catch(e){} }
+function shareScreenshot(t) { alert("Captura guardada."); }

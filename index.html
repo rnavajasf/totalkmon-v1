@@ -6,16 +6,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050a14">
     <title>Totalkmon</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
-
     <div class="particles" id="particles"></div>
 
     <header>
@@ -44,7 +41,7 @@
                 </div>
             </div>
             <div class="card-container">
-                <div class="card interactive-card" id="oracle-card">
+                <div class="card interactive-card" id="oracle-card-trigger">
                     <div class="card-inner">
                         <span class="category-pill" id="q-cat">Bienvenida</span>
                         <p class="question-content" id="q-text">Cargando...</p>
@@ -81,7 +78,7 @@
                 <div class="divider"><span>O</span></div>
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
                     <h3>🚀 Unirse</h3>
-                    <input type="text" id="join-code" placeholder="CÓDIGO" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <input type="text" id="join-code" placeholder="CÓDIGO (4 letras)" maxlength="4" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
                     <button class="btn-submit" id="btn-join-room" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
@@ -98,8 +95,7 @@
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
                     <button class="btn-submit" id="btn-next-round" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;"><i class="fas fa-play"></i> Siguiente</button>
                 </div>
-                
-                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p class="pulse-text"><i class="fas fa-link"></i> Esperando al anfitrión...</p></div>
+                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p class="pulse-text"><i class="fas fa-link"></i> Sincronizado</p></div>
             </div>
         </section>
 
@@ -109,7 +105,10 @@
                 <div class="avatar-wrapper" id="profile-avatar-wrapper"><div class="avatar-circle" id="profile-avatar">🦊</div></div>
                 <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Apodo" maxlength="12">
             </div>
-            <div id="avatar-selector" class="avatar-grid" style="display: none;"><div class="av-option">🦊</div><div class="av-option">👽</div><div class="av-option">🤖</div><div class="av-option">🦁</div></div>
+            <div id="avatar-selector" class="avatar-grid" style="display: none;">
+                <div class="av-option">🦊</div><div class="av-option">👽</div><div class="av-option">🤖</div><div class="av-option">🦁</div>
+                <div class="av-option">🦄</div><div class="av-option">💀</div><div class="av-option">👻</div><div class="av-option">🐲</div>
+            </div>
             <div class="stats-grid"><div class="stat-box"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha</span></div><div class="stat-box"><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Votos</span></div></div>
             <button class="share-btn" id="btn-share-profile" style="margin-top:20px; display:flex;"><i class="fas fa-id-card"></i> Compartir Perfil</button>
         </section>
@@ -118,7 +117,6 @@
             <div class="section-title"><h2>Juicio</h2></div>
             <div class="card-container"><div class="card judge-card"><p class="question-content" id="judge-text">Sin datos</p></div></div>
         </section>
-        
         <section id="admin-section"><div class="admin-card"><h3>God Mode</h3><button class="mini-share-btn" id="btn-admin-exit">Salir</button></div></section>
     </main>
 
