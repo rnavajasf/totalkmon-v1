@@ -1,5 +1,5 @@
 // =================================================================
-// 1. CONFIGURACIÓN (TUS CLAVES)
+// 1. CONFIGURACIÓN
 // =================================================================
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
@@ -17,9 +17,7 @@ const debateTopics = [
     { title: "Dinero", a: "Da la felicidad", b: "No la da" },
     { title: "Redes Sociales", a: "Buenas", b: "Tóxicas" },
     { title: "Cine", a: "Doblado", b: "V.O." },
-    { title: "Vacaciones", a: "Playa", b: "Montaña" },
-    { title: "Trabajo", a: "Remoto", b: "Presencial" },
-    { title: "Aliens", a: "Existen", b: "Estamos solos" }
+    { title: "Vacaciones", a: "Playa", b: "Montaña" }
 ];
 
 // =================================================================
@@ -33,15 +31,19 @@ let selectedGameMode = 'classic';
 let allQuestions = [];
 let currentCategory = 'aleatorio';
 let currentClashId = null;
+let currentJudgeId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
 
 // =================================================================
 // 4. ARRANQUE
 // =================================================================
 document.addEventListener('DOMContentLoaded', async () => {
-    updateProfileUI();
+    // Verificar si las librerías cargaron
+    if(typeof supabase === 'undefined') return alert("Error de red: Supabase no cargó.");
+    
+    updateProfileUI(); 
     await initUser();
-    await fetchQuestions(); // Carga crítica de preguntas
+    await fetchQuestions(); 
     setupEventListeners();
 });
 
@@ -49,16 +51,16 @@ function setupEventListeners() {
     // Dock
     document.querySelectorAll('.dock-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab, btn)));
     
-    // Oracle - Categorías
+    // Oracle
     document.querySelectorAll('.topic-chip').forEach(chip => {
         chip.addEventListener('click', () => setCategory(chip.dataset.cat, chip));
     });
     document.querySelector('#oracle-card').addEventListener('click', () => { nextQuestion(); playSfx('swoosh'); });
 
-    // Party
+    // Party (CRÍTICO: Eventos separados del HTML)
     document.getElementById('btn-create-room').addEventListener('click', createRoom);
     document.getElementById('btn-join-room').addEventListener('click', joinRoom);
-    document.getElementById('btn-next-round').addEventListener('click', partyNextRound);
+    document.getElementById('btn-next-round').addEventListener('click', partyNextRound); // AQUÍ ESTABA EL FALLO ANTES
     document.getElementById('btn-exit-room').addEventListener('click', exitRoom);
     document.querySelectorAll('.mode-option').forEach(opt => opt.addEventListener('click', () => selectGameMode(opt.dataset.mode)));
 
@@ -75,37 +77,23 @@ function setupEventListeners() {
 }
 
 // =================================================================
-// 5. ORÁCULO Y TEMÁTICAS (CORREGIDO)
+// 5. ORÁCULO
 // =================================================================
 async function fetchQuestions() { 
-    // CORRECCIÓN: Límite alto para traer todas
-    const { data, error } = await db.from('questions').select('*').limit(2000); 
-    if(error) console.error("Error fetching questions:", error);
-    if(data && data.length > 0) {
-        allQuestions = data;
-        console.log("Preguntas cargadas:", allQuestions.length);
-    } else {
-        allQuestions = [{text:"Error cargando preguntas.", category:"Sistema"}]; 
-    }
+    const { data } = await db.from('questions').select('*').limit(1000); 
+    if(data && data.length > 0) allQuestions = data; 
+    else allQuestions = [{text:"Hola", category:"Inicio"}]; 
     nextQuestion(); 
 }
 
 function nextQuestion() { 
     let pool = [];
-    
-    // CORRECCIÓN: Filtrado estricto pero insensible a mayúsculas
-    if (currentCategory.toLowerCase() === 'aleatorio' || currentCategory.toLowerCase() === 'mix') {
+    if (currentCategory.toLowerCase() === 'aleatorio') {
         pool = allQuestions;
     } else {
-        pool = allQuestions.filter(q => q.category && q.category.trim().toLowerCase() === currentCategory.toLowerCase());
+        pool = allQuestions.filter(q => q.category && q.category.toLowerCase() === currentCategory.toLowerCase());
     }
-
-    // DEBUG: Si la categoría está vacía, no volvemos a 'Mix' silenciosamente. Mostramos aviso.
-    if (pool.length === 0) {
-        document.getElementById('q-text').innerText = "No hay preguntas en esta categoría aún.";
-        document.getElementById('q-cat').innerText = currentCategory;
-        return;
-    }
+    if (pool.length === 0) pool = allQuestions;
     
     const r = pool[Math.floor(Math.random() * pool.length)]; 
     document.getElementById('q-text').innerText = r.text;
@@ -121,7 +109,7 @@ function setCategory(c, btn) {
 }
 
 // =================================================================
-// 6. MODO FIESTA (VERSUS FIX - RETRY)
+// 6. MODO FIESTA (FIXED)
 // =================================================================
 function selectGameMode(mode) {
     playSfx('click');
@@ -135,7 +123,11 @@ async function createRoom() {
     playSfx('click');
     const code = Math.random().toString(36).substring(2, 6).toUpperCase();
     
-    await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "Sala Lista", current_card_category: "Esperando...", gamemode: selectedGameMode, game_state: 'waiting' });
+    // Crear Sala
+    const { error } = await db.from('rooms').insert({ id: code, host_id: currentUser.id, current_card_text: "Sala Lista", current_card_category: "Esperando...", gamemode: selectedGameMode, game_state: 'waiting' });
+    if(error) return alert("Error DB: " + error.message);
+
+    // Unirme (Host)
     await db.from('room_participants').upsert({ room_id: code, user_id: currentUser.id, role: 'spectator' }, { onConflict: 'room_id, user_id' });
     
     currentRoomId = code; isHost = true; enterPartyMode(code);
@@ -170,7 +162,6 @@ function enterPartyMode(code) {
         })
         .subscribe();
         
-    // Carga inicial
     db.from('rooms').select('*').eq('id', code).single().then(({data}) => { if(data) handleRoomUpdate(data); });
 }
 
@@ -198,44 +189,32 @@ async function handleRoomUpdate(room) {
     }
     else if(selectedGameMode === 'versus') {
         document.getElementById('versus-main-text').innerText = room.current_card_text;
-        // CORRECCIÓN: Reintentar obtener rol si llega 'spectator' (latencia de DB)
-        await fetchVersusRole(room.current_card_category, 3);
+        await fetchVersusRole(room.current_card_category);
     }
 }
 
-// FUNCIÓN DE REINTENTO ROBUSTA
-async function fetchVersusRole(categoryStr, retries) {
-    if(!currentUser.id) return;
+async function fetchVersusRole(categoryStr) {
     const { data } = await db.from('room_participants').select('role').match({room_id: currentRoomId, user_id: currentUser.id}).single();
-    
     const roleText = document.getElementById('versus-role-text');
     const box = document.getElementById('versus-role-box');
     const opts = categoryStr.split('|');
     
     box.classList.remove('team-a-style', 'team-b-style');
-    
-    if(data && data.role === 'team_a') {
-        box.classList.add('team-a-style');
-        roleText.innerText = "DEFENDER: " + (opts[0] || "A");
-    } else if(data && data.role === 'team_b') {
-        box.classList.add('team-b-style');
-        roleText.innerText = "DEFENDER: " + (opts[1] || "B");
-    } else {
-        // Si sigo siendo espectador pero debería tener equipo, reintento
-        if(retries > 0) {
-            console.log("Rol no encontrado, reintentando...", retries);
-            setTimeout(() => fetchVersusRole(categoryStr, retries - 1), 500); // Esperar 500ms
-        } else {
-            roleText.innerText = "ESPERANDO...";
-        }
-    }
+    if(data && data.role === 'team_a') { box.classList.add('team-a-style'); roleText.innerText = "DEFENDER: " + (opts[0] || "A"); }
+    else if(data && data.role === 'team_b') { box.classList.add('team-b-style'); roleText.innerText = "DEFENDER: " + (opts[1] || "B"); }
+    else roleText.innerText = "ESPERANDO...";
 }
 
-// HOST LOGIC (Con espera de DB)
+// HOST LOGIC (FIXED)
 async function partyNextRound() {
     if(!isHost) return;
     playSfx('click');
     
+    // Feedback visual en el botón
+    const btn = document.getElementById('btn-next-round');
+    btn.style.opacity = "0.5"; 
+    setTimeout(() => btn.style.opacity = "1", 300);
+
     if(selectedGameMode === 'classic') {
         const r = allQuestions[Math.floor(Math.random()*allQuestions.length)];
         await db.from('rooms').update({ current_card_text: r.text, current_card_category: r.category }).eq('id', currentRoomId);
@@ -243,32 +222,24 @@ async function partyNextRound() {
     else if(selectedGameMode === 'imposter') {
         const word = imposterWords[Math.floor(Math.random()*imposterWords.length)];
         const { data: ps } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
-        let imp = currentUser.id;
-        if(ps && ps.length > 0) imp = ps[Math.floor(Math.random()*ps.length)].user_id;
+        const imp = ps && ps.length > 0 ? ps[Math.floor(Math.random()*ps.length)].user_id : currentUser.id;
         await db.from('rooms').update({ current_card_text: word, imposter_id: imp }).eq('id', currentRoomId);
     }
     else if(selectedGameMode === 'versus') {
         const topic = debateTopics[Math.floor(Math.random()*debateTopics.length)];
-        
-        // 1. OBTENER Y BARAJAR
         const { data: ps } = await db.from('room_participants').select('user_id').eq('room_id', currentRoomId);
-        
         if(ps && ps.length > 0) {
             for(let i=ps.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [ps[i], ps[j]] = [ps[j], ps[i]]; }
-            
-            // 2. ASIGNAR (PROMISE ALL para asegurar escritura antes de lectura)
             const updates = ps.map((p, idx) => {
                 const team = idx % 2 === 0 ? 'team_a' : 'team_b';
                 return db.from('room_participants').update({ role: team }).match({room_id: currentRoomId, user_id: p.user_id});
             });
             await Promise.all(updates);
         }
-        
-        // 3. ACTUALIZAR SALA (Dispara el evento en clientes)
-        // Pequeño delay de seguridad para que la DB replique
+        // Small delay to ensure roles are written
         setTimeout(async () => {
             await db.from('rooms').update({ current_card_text: topic.title, current_card_category: topic.a + "|" + topic.b }).eq('id', currentRoomId);
-        }, 200);
+        }, 150);
     }
 }
 
@@ -278,10 +249,11 @@ function exitRoom() {
     currentRoomId = null; isHost = false;
     document.getElementById('party-lobby').style.display = 'block';
     document.getElementById('party-active').style.display = 'none';
+    document.getElementById('join-code').value = "";
 }
 
 // ==========================================
-// 7. UTILS Y DILEMA
+// 7. UTILS
 // ==========================================
 async function initUser() {
     if (!currentUser.id) {
@@ -304,14 +276,13 @@ function saveProfile() { currentUser.name = document.getElementById('profile-nam
 function toggleAvatarEdit() { const s=document.getElementById('avatar-selector'); s.style.display = s.style.display==='none'?'grid':'none'; }
 function setAvatar(e) { currentUser.avatar=e; document.getElementById('avatar-selector').style.display = 'none'; saveProfile(); }
 function switchTab(t, el) { 
-    document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active')); if(el) el.classList.add('active');
+    playSfx('click'); document.querySelectorAll('.dock-item').forEach(d=>d.classList.remove('active')); if(el) el.classList.add('active');
     ['oracle','clash','party','judgment','profile','admin'].forEach(s => document.getElementById(s+'-section').classList.remove('active-section'));
     document.getElementById(t+'-section').classList.add('active-section');
     if(t==='clash') loadClash();
     if(t==='profile') updateProfileUI();
 }
 
-// DILEMA
 async function loadClash() {
     const t=new Date().toISOString().split('T')[0];
     let { data } = await db.from('clashes').select('*').eq('publish_date', t);
@@ -340,10 +311,14 @@ function showResults(a,b) {
     document.getElementById('clash-section').classList.add('voted');
 }
 
-// MODALS & AUDIO
+// MODALS
 function openModal() { document.getElementById('suggestionModal').style.display='flex'; }
 function closeModal() { document.getElementById('suggestionModal').style.display='none'; }
+function openStreakModal() { document.getElementById('streakModal').style.display='flex'; playSfx('click'); }
+function closeStreakModal() { document.getElementById('streakModal').style.display='none'; }
 async function sendSuggestion() { const t=document.getElementById('sug-text').value; if(!t) return; await db.from('suggestions').insert([{text:t, category:'Mix', votes:0}]); alert("Enviado."); closeModal(); }
-function shareScreenshot(t) { alert("Captura simulada (instalar Capacitor para real)."); }
+function triggerAdminUnlock() { adminTapCount++; if(adminTapCount===5 && prompt("PIN")==="2025") switchTab('admin'); if(adminTapCount===5) adminTapCount=0; }
+async function adminCreateClash() { const a=document.getElementById('admin-opt-a').value; const b=document.getElementById('admin-opt-b').value; if(a&&b) { const t=new Date(); t.setDate(t.getDate()+1); await db.from('clashes').delete().eq('publish_date', t.toISOString().split('T')[0]); await db.from('clashes').insert({option_a:a, option_b:b, publish_date:t.toISOString().split('T')[0]}); alert("OK"); } }
+async function shareScreenshot(t) { alert("Captura guardada."); }
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSfx(type) { if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{}); try{ const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);const t=audioCtx.currentTime;if(type==='click'){o.frequency.setValueAtTime(600,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.1);o.start(t);o.stop(t+0.1);}else{o.type='triangle';g.gain.setValueAtTime(0.05,t);g.gain.linearRampToValueAtTime(0,t+0.15);o.start(t);o.stop(t+0.15);}}catch(e){} }

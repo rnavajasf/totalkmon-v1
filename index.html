@@ -47,7 +47,7 @@
                 <div class="card interactive-card" id="oracle-card">
                     <div class="card-inner">
                         <span class="category-pill" id="q-cat">Bienvenida</span>
-                        <p class="question-content" id="q-text">Invocando sabiduría...</p>
+                        <p class="question-content" id="q-text">Cargando...</p>
                         <p class="hint">Toca para siguiente</p>
                     </div>
                 </div>
@@ -67,6 +67,7 @@
 
         <section id="party-section">
             <div class="section-title"><h2>Modo Fiesta</h2><p>Multijugador</p></div>
+            
             <div id="party-lobby">
                 <div class="admin-card">
                     <h3>👑 Crear Sala</h3>
@@ -84,28 +85,33 @@
                     <button class="btn-submit" id="btn-join-room" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
+
             <div id="party-active" style="display: none;">
                 <div class="room-header"><span class="room-label">SALA:</span><span class="room-code" id="display-room-code">----</span><button class="exit-room-btn" id="btn-exit-room"><i class="fas fa-sign-out-alt"></i></button></div>
+                
                 <div class="card-container" style="min-height: 300px;">
                     <div class="card party-card" id="party-card-classic"><div class="card-inner"><span class="category-pill" id="party-cat">...</span><p class="question-content" id="party-text">Esperando...</p></div></div>
-                    <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);"><div class="card-inner"><span class="category-pill" id="versus-topic">VERSUS</span><h2 class="versus-title" id="versus-main-text">...</h2><div class="versus-assignment" id="versus-role-box"><p style="font-size:0.8rem;">TU MISIÓN:</p><h3 id="versus-role-text">ASIGNANDO EQUIPO...</h3></div></div></div>
+                    <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);"><div class="card-inner"><span class="category-pill" id="versus-topic">VERSUS</span><h2 class="versus-title" id="versus-main-text">...</h2><div class="versus-assignment" id="versus-role-box"><p style="font-size:0.8rem;">TU MISIÓN:</p><h3 id="versus-role-text">ASIGNANDO...</h3></div></div></div>
                     <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;"><div class="card-inner"><i class="fas fa-fingerprint" style="font-size:3rem; opacity:0.5;"></i><span class="category-pill">SECRETO</span><p class="question-content" id="imposter-role-text" style="filter: blur(8px);">???</p><p class="hint">Toca para revelar</p></div></div>
                 </div>
+
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
                     <button class="btn-submit" id="btn-next-round" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;"><i class="fas fa-play"></i> Siguiente</button>
                 </div>
-                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p class="pulse-text"><i class="fas fa-link"></i> Sincronizado</p></div>
+                
+                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p class="pulse-text"><i class="fas fa-link"></i> Esperando al anfitrión...</p></div>
             </div>
         </section>
 
         <section id="profile-section">
             <div class="section-title"><h2>Perfil</h2></div>
             <div class="profile-card">
-                <div class="avatar-wrapper" onclick="toggleAvatarEdit()"><div class="avatar-circle" id="profile-avatar">🦊</div></div>
-                <input type="text" id="profile-name" class="profile-name-input" placeholder="Nombre" onblur="saveProfile()">
+                <div class="avatar-wrapper" id="profile-avatar-wrapper"><div class="avatar-circle" id="profile-avatar">🦊</div></div>
+                <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Apodo" maxlength="12">
             </div>
             <div id="avatar-selector" class="avatar-grid" style="display: none;"><div class="av-option">🦊</div><div class="av-option">👽</div><div class="av-option">🤖</div><div class="av-option">🦁</div></div>
             <div class="stats-grid"><div class="stat-box"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha</span></div><div class="stat-box"><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Votos</span></div></div>
+            <button class="share-btn" id="btn-share-profile" style="margin-top:20px; display:flex;"><i class="fas fa-id-card"></i> Compartir Perfil</button>
         </section>
 
         <section id="judgment-section">
