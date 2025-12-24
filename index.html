@@ -18,8 +18,10 @@
 
     <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#050a14; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#FFD700;">
         <i class="fas fa-circle-notch fa-spin" style="font-size:3rem; margin-bottom:20px;"></i>
-        <h2 style="font-family:'Cinzel', serif;">CONECTANDO...</h2>
-        <p id="loading-text" style="font-size:0.8rem; opacity:0.7; margin-top:10px;">Verificando identidad...</p>
+        <h2 style="font-family:'Cinzel', serif;">CARGANDO</h2>
+        <p id="loading-status" style="font-size:0.8rem; opacity:0.7; margin-top:10px;">Iniciando...</p>
+        <p id="error-log" style="color: #FF4757; font-size: 0.7rem; margin-top: 20px; max-width: 80%; text-align: center; display: none;"></p>
+        <button id="btn-force-reset" onclick="forceReset()" style="display:none; margin-top:20px; padding:10px 20px; background:red; color:white; border:none; border-radius:5px;">REINICIAR APP</button>
     </div>
 
     <div class="particles" id="particles"></div>
@@ -35,7 +37,6 @@
     </header>
 
     <main class="main-stage">
-        
         <section id="oracle-section" class="active-section">
             <div class="topic-slider-container">
                 <div class="topic-slider">
@@ -53,7 +54,7 @@
                 <div class="card interactive-card" onclick="app.nextQuestion()">
                     <div class="card-inner">
                         <span class="category-pill" id="q-cat">Bienvenida</span>
-                        <p class="question-content" id="q-text">Cargando...</p>
+                        <p class="question-content" id="q-text">...</p>
                         <p class="hint">Toca para siguiente</p>
                     </div>
                 </div>
@@ -87,20 +88,18 @@
                 <div class="divider"><span>O</span></div>
                 <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
                     <h3>🚀 Unirse</h3>
-                    <input type="text" id="join-code" placeholder="CÓDIGO (4 letras)" maxlength="4" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <input type="text" id="join-code" placeholder="CÓDIGO" maxlength="4" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
                     <button class="btn-submit" onclick="app.joinRoom()" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
 
             <div id="party-active" style="display: none;">
                 <div class="room-header"><span class="room-label">SALA:</span><span class="room-code" id="display-room-code">----</span><button class="exit-room-btn" onclick="app.exitRoom()"><i class="fas fa-sign-out-alt"></i></button></div>
-                
                 <div class="card-container" style="min-height: 300px;">
                     <div class="card party-card" id="party-card-classic"><div class="card-inner"><span class="category-pill" id="party-cat">...</span><p class="question-content" id="party-text">Esperando...</p></div></div>
                     <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);"><div class="card-inner"><span class="category-pill" id="versus-topic">VERSUS</span><h2 class="versus-title" id="versus-main-text">...</h2><div class="versus-assignment" id="versus-role-box"><p style="font-size:0.8rem;">TU MISIÓN:</p><h3 id="versus-role-text">ASIGNANDO...</h3></div></div></div>
                     <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;"><div class="card-inner"><i class="fas fa-fingerprint" style="font-size:3rem; opacity:0.5;"></i><span class="category-pill">SECRETO</span><p class="question-content" id="imposter-role-text" style="filter: blur(8px);">???</p><p class="hint">Toca para revelar</p></div></div>
                 </div>
-
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
                     <button class="btn-submit" onclick="app.partyNextRound()" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;"><i class="fas fa-play"></i> Siguiente</button>
                 </div>
@@ -116,13 +115,9 @@
             </div>
             <div id="avatar-selector" class="avatar-grid" style="display: none;"><div class="av-option" onclick="app.setAvatar('🦊')">🦊</div><div class="av-option" onclick="app.setAvatar('👽')">👽</div><div class="av-option" onclick="app.setAvatar('🤖')">🤖</div><div class="av-option" onclick="app.setAvatar('🦁')">🦁</div></div>
             <div class="stats-grid"><div class="stat-box"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha</span></div><div class="stat-box"><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Votos</span></div></div>
-            <button class="share-btn" onclick="app.share('profile')" style="margin-top:20px; display:flex;"><i class="fas fa-id-card"></i> Compartir Perfil</button>
         </section>
 
-        <section id="judgment-section">
-            <div class="section-title"><h2>Juicio</h2></div>
-            <div class="card-container"><div class="card judge-card"><p class="question-content">Sin datos</p></div></div>
-        </section>
+        <section id="admin-section"><div class="admin-card"><h3>God Mode</h3><button class="mini-share-btn" onclick="app.switchTab('profile')">Salir</button></div></section>
     </main>
 
     <nav class="bottom-dock">
