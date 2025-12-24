@@ -7,6 +7,7 @@
     --glass: rgba(22, 22, 35, 0.8);
     --red: #FF4757;
     --green: #2ED573;
+    --cyan: #00e5ff; /* Color Admin */
     --safe-bottom: env(safe-area-inset-bottom);
 }
 
@@ -91,7 +92,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .edit-badge { position: absolute; bottom: 0; right: 0; background: var(--gold); color: #000; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
 .profile-name-input { background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.3); color: white; font-size: 1.5rem; text-align: center; font-family: 'Cinzel', serif; margin-bottom: 5px; width: 100%; }
 .profile-name-input:focus { outline: none; border-color: var(--gold); }
-.level-badge { font-size: 0.8rem; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; }
+.level-badge { font-size: 0.8rem; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 1px; user-select: none; }
 .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; margin-bottom: 20px; animation: fadeIn 0.3s; }
 .av-option { font-size: 2rem; padding: 10px; border-radius: 10px; cursor: pointer; background: rgba(255,255,255,0.05); }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px; }
@@ -99,6 +100,11 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .stat-icon { font-size: 1.2rem; margin-bottom: 5px; }
 .stat-value { font-size: 1.5rem; font-weight: 800; color: white; }
 .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+
+/* ESTILOS ADMIN (GOD MODE) */
+.admin-card { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: center; }
+.admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
+.admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
 /* JUICIO */
 .judge-badge { background: var(--red); color: white; padding: 4px 10px; border-radius: 4px; font-family: 'Cinzel', serif; font-size: 0.7rem; margin-bottom: 15px; }
@@ -124,14 +130,12 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; font-family: 'Montserrat', sans-serif;}
 .btn-submit { width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 8px; font-weight: 800; color: #000; text-transform: uppercase; }
 
-/* ESTUDIO DE CAPTURA OCULTO (Para compartir) */
+/* ESTUDIO DE CAPTURA OCULTO */
 #capture-stage {
-    position: fixed; top: 0; left: -9999px; /* Oculto */
-    width: 1080px; height: 1080px; /* Cuadrado perfecto para IG */
+    position: fixed; top: 0; left: -9999px; width: 1080px; height: 1080px;
     background: radial-gradient(circle at top, #0b1e3b, #050a14);
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    padding: 80px; text-align: center; color: white;
-    font-family: 'Montserrat', sans-serif;
+    padding: 80px; text-align: center; color: white; font-family: 'Montserrat', sans-serif;
 }
 .capture-logo { font-size: 3rem; font-family: 'Cinzel', serif; color: var(--gold); display: flex; flex-direction: column; align-items: center; margin-bottom: 60px; }
 .capture-content { font-size: 3.5rem; font-weight: 600; line-height: 1.4; margin-bottom: 60px; color: #fff; text-shadow: 0 10px 30px rgba(0,0,0,0.5); }

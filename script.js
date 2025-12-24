@@ -18,6 +18,7 @@ let currentCategory = 'aleatorio';
 let currentJudgeId = null;
 let currentClashId = null;
 let clashData = { a: '', b: '', va: 0, vb: 0 };
+let adminTapCount = 0; // Para el gesto secreto
 
 // SONIDO
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -40,18 +41,90 @@ function playSfx(type) {
     }
 }
 
-// MOTOR DE COMPARTIR VIRAL (NUEVO)
+// ==========================================
+// GOD MODE (ADMINISTRACIÓN)
+// ==========================================
+function triggerAdminUnlock() {
+    adminTapCount++;
+    if (adminTapCount === 5) {
+        const pin = prompt("🔐 GOD MODE ACCESS PIN:");
+        if (pin === "2025") { // TU CLAVE SECRETA (Cámbiala si quieres)
+            alert("Bienvenido, CEO.");
+            switchTab('admin');
+            loadAdminStats();
+            fetchAdminModeration();
+        } else {
+            alert("Acceso denegado.");
+        }
+        adminTapCount = 0;
+    }
+}
+
+async function loadAdminStats() {
+    // Contar usuarios (aprox)
+    const { count: users } = await db.from('profiles').select('*', { count: 'exact', head: true });
+    // Contar pendientes
+    const { count: pending } = await db.from('suggestions').select('*', { count: 'exact', head: true });
+    
+    document.getElementById('admin-users').innerText = users || 0;
+    document.getElementById('admin-pending').innerText = pending || 0;
+}
+
+async function adminCreateClash() {
+    const a = document.getElementById('admin-opt-a').value;
+    const b = document.getElementById('admin-opt-b').value;
+    if(!a || !b) return alert("Rellena las dos opciones.");
+    
+    // Programar para MAÑANA
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().split('T')[0];
+    
+    await db.from('clashes').insert({
+        option_a: a, option_b: b, publish_date: dateStr, votes_a: 0, votes_b: 0
+    });
+    alert(`Dilema programado para el ${dateStr}`);
+    document.getElementById('admin-opt-a').value = "";
+    document.getElementById('admin-opt-b').value = "";
+}
+
+let adminJudgeId = null;
+async function fetchAdminModeration() {
+    const { data } = await db.from('suggestions').select('*').limit(1);
+    if(data && data.length > 0) {
+        adminJudgeId = data[0].id;
+        document.getElementById('admin-sug-text').innerText = `(${data[0].category}) ${data[0].text}`;
+    } else {
+        document.getElementById('admin-sug-text').innerText = "No hay nada pendiente.";
+        adminJudgeId = null;
+    }
+}
+
+async function adminModerate(val) {
+    if(!adminJudgeId) return;
+    const { data: current } = await db.from('suggestions').select('*').eq('id', adminJudgeId).single();
+    
+    if(val === 1) { // APROBAR DIRECTO
+        await db.from('questions').insert([{ text: current.text, category: current.category }]);
+        await db.from('suggestions').delete().eq('id', adminJudgeId);
+        playSfx('success');
+    } else { // BORRAR DIRECTO
+        await db.from('suggestions').delete().eq('id', adminJudgeId);
+    }
+    fetchAdminModeration();
+}
+
+
+// SHARE VIRAL
 async function shareScreenshot(type) {
     playSfx('click');
     const captureDiv = document.getElementById('capture-stage');
     const textDiv = document.getElementById('capture-text');
     
-    // 1. Preparar el contenido del "Estudio"
     if (type === 'oracle') {
         const q = document.getElementById('q-text').innerText;
         textDiv.innerHTML = `"${q}"`;
     } else if (type === 'clash') {
-        // En dilema, mostramos el ganador
         const winText = clashData.va > clashData.vb ? clashData.a : clashData.b;
         const total = clashData.va + clashData.vb;
         const perc = total===0 ? 0 : Math.round((Math.max(clashData.va, clashData.vb)/total)*100);
@@ -60,29 +133,15 @@ async function shareScreenshot(type) {
         textDiv.innerHTML = `Soy ${currentUser.name} ${currentUser.avatar}<br><br>Racha: ${currentUser.streak} 🔥<br>Nivel: ${document.getElementById('profile-level').innerText}`;
     }
 
-    // 2. Tomar la foto
     try {
         const canvas = await html2canvas(captureDiv, { scale: 2, useCORS: true });
-        
-        // 3. Convertir a archivo compartible
         canvas.toBlob(async (blob) => {
             const file = new File([blob], "totalkmon_share.png", { type: "image/png" });
-            
-            // 4. Invocar compartir nativo
             if (navigator.share) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Totalkmon',
-                    text: 'Mira esto 👇'
-                });
-            } else {
-                alert("Tu dispositivo no soporta compartir imágenes directas. Haz una captura manual.");
-            }
+                await navigator.share({ files: [file], title: 'Totalkmon', text: 'Mira esto 👇' });
+            } else { alert("Tu dispositivo no soporta compartir imágenes directas."); }
         });
-    } catch (err) {
-        console.error(err);
-        alert("Error generando imagen.");
-    }
+    } catch (err) { console.error(err); alert("Error generando imagen."); }
 }
 
 // CLOUD IDENTITY
@@ -91,41 +150,25 @@ async function initUser() {
         const { data } = await db.from('profiles').insert([{
             username: currentUser.name, avatar: currentUser.avatar, streak: 1, last_visit: new Date().toISOString()
         }]).select().single();
-        if (data) {
-            currentUser.id = data.id;
-            localStorage.setItem('user_uuid', data.id);
-        }
+        if (data) { currentUser.id = data.id; localStorage.setItem('user_uuid', data.id); }
     } else {
         const { data } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
-        if (data) {
-            currentUser.streak = data.streak;
-            currentUser.votes = data.votes_cast;
-            checkStreakCloud(data);
-            updateProfileUI();
-        }
+        if (data) { currentUser.streak = data.streak; currentUser.votes = data.votes_cast; checkStreakCloud(data); updateProfileUI(); }
     }
     updateProfileUI();
 }
-
 async function syncProfileToCloud() {
     if(!currentUser.id) return;
-    await db.from('profiles').update({
-        username: currentUser.name, avatar: currentUser.avatar, streak: currentUser.streak, votes_cast: currentUser.votes
-    }).eq('id', currentUser.id);
+    await db.from('profiles').update({ username: currentUser.name, avatar: currentUser.avatar, streak: currentUser.streak, votes_cast: currentUser.votes }).eq('id', currentUser.id);
 }
-
 function checkStreakCloud(cloudData) {
     const today = new Date().toISOString().split('T')[0];
     const lastVisit = cloudData.last_visit ? cloudData.last_visit.split('T')[0] : null;
-
     if (lastVisit !== today) {
         const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-        if (lastVisit === yesterdayStr) {
-            currentUser.streak++; setTimeout(() => playSfx('success'), 800);
-        } else { currentUser.streak = 1; }
-        
+        if (lastVisit === yesterdayStr) { currentUser.streak++; setTimeout(() => playSfx('success'), 800); } 
+        else { currentUser.streak = 1; }
         db.from('profiles').update({ last_visit: new Date().toISOString(), streak: currentUser.streak }).eq('id', currentUser.id);
         updateProfileUI();
     }
@@ -138,7 +181,6 @@ async function fetchQuestions() {
     else allQuestions = [{text: "Bienvenido.", category: "Inicio"}];
     nextQuestion();
 }
-
 function nextQuestion() {
     let pool = allQuestions;
     if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
@@ -152,13 +194,11 @@ function nextQuestion() {
         cardContent.style.opacity = '1'; cardContent.style.transform = 'scale(1)';
     }, 200);
 }
-
 function setCategory(cat, btn) {
     playSfx('click'); currentCategory = cat;
     document.querySelectorAll('.topic-chip').forEach(b => b.classList.remove('active'));
     if(btn) btn.classList.add('active'); nextQuestion();
 }
-
 async function loadClash() {
     const today = new Date().toISOString().split('T')[0];
     let { data } = await db.from('clashes').select('*').eq('publish_date', today);
@@ -173,7 +213,6 @@ async function loadClash() {
         }
     }
 }
-
 async function voteClash(opt) {
     if(!currentClashId || !currentUser.id) return;
     if(document.getElementById('clash-section').classList.contains('voted')) return;
@@ -185,14 +224,12 @@ async function voteClash(opt) {
     localStorage.setItem('voted_'+currentClashId, 'true');
     currentUser.votes++; updateProfileUI(); syncProfileToCloud();
 }
-
 function showResults(a, b) {
     let t = a + b; let pa = t===0?0:Math.round((a/t)*100), pb = t===0?0:Math.round((b/t)*100);
     document.getElementById('bar-a').style.width = pa+'%'; document.getElementById('bar-b').style.width = pb+'%';
     document.getElementById('perc-a').innerText = pa+'%'; document.getElementById('perc-b').innerText = pb+'%';
     document.getElementById('clash-section').classList.add('voted');
 }
-
 async function fetchJudge() {
     const { data } = await db.from('suggestions').select('*').limit(5);
     if (data && data.length > 0) {
@@ -200,7 +237,6 @@ async function fetchJudge() {
         currentJudgeId = r.id; document.getElementById('judge-text').innerText = r.text; document.getElementById('judge-cat').innerText = r.category;
     } else { document.getElementById('judge-text').innerText = "Todo limpio."; document.getElementById('judge-cat').innerText = ""; currentJudgeId = null; }
 }
-
 async function voteJudgment(val) {
     if(!currentJudgeId) return; playSfx('click');
     document.querySelector('.judge-card').style.transform = 'translateX(' + (val * 20) + 'px)';
@@ -213,7 +249,6 @@ async function voteJudgment(val) {
     else { await db.from('suggestions').update({ votes: nv }).eq('id', currentJudgeId); }
     currentUser.votes++; updateProfileUI(); syncProfileToCloud(); fetchJudge();
 }
-
 function updateProfileUI() {
     document.getElementById('profile-name').value = currentUser.name;
     document.getElementById('profile-avatar').innerText = currentUser.avatar;
@@ -226,14 +261,13 @@ function updateProfileUI() {
     let t = "Novato"; if(l > 5) t = "Juez"; if(l > 20) t = "Oráculo"; if(l > 50) t = "Dios";
     document.getElementById('profile-level').innerText = `Nivel ${l}: ${t}`;
 }
-
 function saveProfile() { const n = document.getElementById('profile-name').value; if(n.trim() === "") return; currentUser.name = n; updateProfileUI(); syncProfileToCloud(); }
 function toggleAvatarEdit() { const s = document.getElementById('avatar-selector'); s.style.display = s.style.display === 'none' ? 'grid' : 'none'; playSfx('click'); }
 function setAvatar(e) { currentUser.avatar = e; document.getElementById('avatar-selector').style.display = 'none'; playSfx('success'); updateProfileUI(); syncProfileToCloud(); }
 async function sendSuggestion() { const t = document.getElementById('sug-text').value; const c = document.getElementById('sug-cat').value; if(!t) return; await db.from('suggestions').insert([{ text: t, category: c, votes: 0 }]); alert("Enviado."); closeModal(); document.getElementById('sug-text').value = ""; }
 function switchTab(t, el) {
     playSfx('click'); document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active')); if(el) el.classList.add('active');
-    ['oracle', 'clash', 'judgment', 'profile'].forEach(s => document.getElementById(s + '-section').classList.remove('active-section'));
+    ['oracle', 'clash', 'judgment', 'profile', 'admin'].forEach(s => document.getElementById(s + '-section').classList.remove('active-section'));
     document.getElementById(t + '-section').classList.add('active-section');
     if(t === 'clash') loadClash(); if(t === 'judgment') fetchJudge(); if(t === 'profile') updateProfileUI();
 }
