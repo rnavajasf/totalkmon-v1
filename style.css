@@ -41,7 +41,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .active-section { display: block; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* CARDS */
+/* COMPONENTS */
 .topic-slider-container { width: 100vw; margin-left: -20px; padding: 10px 20px; overflow-x: auto; white-space: nowrap; margin-bottom: 20px; scrollbar-width: none; }
 .topic-slider-container::-webkit-scrollbar { display: none; }
 .topic-slider { display: inline-flex; gap: 10px; padding-right: 40px; }
@@ -55,7 +55,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .question-content { font-size: 1.6rem; line-height: 1.4; font-weight: 500; margin-bottom: 30px; }
 .hint { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
 
-/* DILEMA UI */
+/* DILEMA */
 .section-title { text-align: center; margin-bottom: 30px; }
 .section-title h2 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.4rem; }
 .section-title p { font-size: 0.8rem; opacity: 0.6; }
@@ -67,7 +67,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .opt-percent { font-weight: 800; font-size: 1.1rem; opacity: 0; } .voted .opt-percent { opacity: 1; }
 .vs-badge { text-align: center; font-size: 0.8rem; color: #555; font-weight: 900; margin: -10px 0; z-index: 5; }
 
-/* SHARED */
+/* SHARE & ADMIN */
 .share-btn { background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-dim); padding: 12px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; margin-top: 15px; display: none; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; }
 .voted .share-btn { display: flex; }
 .mini-share-btn { margin-top: 15px; background: rgba(255,255,255,0.05); color: #888; border: none; padding: 8px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; }
@@ -75,13 +75,14 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .admin-card h3 { color: var(--cyan); font-family: 'Cinzel', serif; margin-bottom: 15px; font-size: 1rem; }
 .admin-card input { border-color: rgba(0, 229, 255, 0.3); }
 
-/* FIESTA STYLES */
+/* FIESTA - GAME SELECTOR */
 .gamemode-selector { display: flex; gap: 10px; margin-bottom: 20px; }
 .mode-option { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid transparent; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: 0.2s; opacity: 0.6; }
 .mode-option i { font-size: 1.5rem; }
 .mode-option span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 .mode-option.selected { background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan); opacity: 1; transform: scale(1.05); }
 
+/* VERSUS MODE */
 .versus-title { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.4; color: #fff; }
 .versus-assignment { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
 .versus-assignment h3 { font-size: 1.5rem; margin-top: 5px; color: var(--gold); }
@@ -90,6 +91,7 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .team-b-style { border-color: var(--blue) !important; background: rgba(55, 66, 250, 0.1) !important; }
 .team-b-style h3 { color: var(--blue) !important; }
 
+/* FIESTA */
 .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
 .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .divider span { padding: 0 10px; }
