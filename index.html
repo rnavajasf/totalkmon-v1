@@ -29,7 +29,6 @@
                 <i class="fas fa-fire"></i> <span id="streak-count">1</span>
             </div>
         </div>
-        
         <div class="logo-container">
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M50 95C74.8528 95 95 74.8528 95 50C95 25.1472 74.8528 5 50 5C25.1472 5 5 25.1472 5 50C5 74.8528 25.1472 95 50 95Z" stroke="#FFBF00" stroke-width="2"/>
@@ -44,7 +43,6 @@
     <main class="main-stage">
         
         <section id="oracle-section" class="active-section">
-            
             <div class="topic-slider-container">
                 <div class="topic-slider">
                     <button class="topic-chip active" onclick="setCategory('aleatorio', this)">✨ Mix</button>
@@ -57,7 +55,6 @@
                     <button class="topic-chip" onclick="setCategory('Nostalgia', this)">📼 Nostalgia</button>
                 </div>
             </div>
-
             <div class="card-container">
                 <div class="card interactive-card" onclick="nextQuestion(); playSfx('swoosh');">
                     <div class="card-inner">
@@ -110,6 +107,50 @@
             </div>
         </section>
 
+        <section id="profile-section">
+            <div class="section-title">
+                <h2>Tu Legado</h2>
+                <p>Tu identidad en el oráculo</p>
+            </div>
+            
+            <div class="profile-card">
+                <div class="avatar-wrapper" onclick="toggleAvatarEdit()">
+                    <div class="avatar-circle" id="profile-avatar">🦊</div>
+                    <div class="edit-badge"><i class="fas fa-pencil-alt"></i></div>
+                </div>
+                <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Apodo" onblur="saveProfile()" maxlength="12">
+                <p class="level-badge" id="profile-level">Nivel 1: Novato</p>
+            </div>
+
+            <div id="avatar-selector" class="avatar-grid" style="display: none;">
+                <div class="av-option" onclick="setAvatar('🦊')">🦊</div>
+                <div class="av-option" onclick="setAvatar('👽')">👽</div>
+                <div class="av-option" onclick="setAvatar('🤖')">🤖</div>
+                <div class="av-option" onclick="setAvatar('🦁')">🦁</div>
+                <div class="av-option" onclick="setAvatar('🦄')">🦄</div>
+                <div class="av-option" onclick="setAvatar('💀')">💀</div>
+                <div class="av-option" onclick="setAvatar('👻')">👻</div>
+                <div class="av-option" onclick="setAvatar('🐲')">🐲</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <i class="fas fa-fire stat-icon" style="color: #FF4500;"></i>
+                    <span class="stat-value" id="stat-streak">0</span>
+                    <span class="stat-label">Racha Días</span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-gavel stat-icon" style="color: var(--gold);"></i>
+                    <span class="stat-value" id="stat-votes">0</span>
+                    <span class="stat-label">Juzgadas</span>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <p>Próximamente: Historial de votos y medallas.</p>
+            </div>
+        </section>
+
     </main>
 
     <nav class="bottom-dock">
@@ -125,7 +166,7 @@
         <button class="dock-item" onclick="switchTab('judgment', this)">
             <i class="fas fa-gavel"></i><span>Juicio</span>
         </button>
-        <button class="dock-item" style="opacity:0.3;" onclick="alert('Próximamente: Tu Perfil')">
+        <button class="dock-item" id="tab-profile" onclick="switchTab('profile', this)">
             <i class="fas fa-user"></i><span>Perfil</span>
         </button>
     </nav>
@@ -134,15 +175,7 @@
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">&times;</span>
             <h3>Sugerir Tema</h3>
-            <select id="sug-cat">
-                <option value="Aleatorio">Mix</option>
-                <option value="Cita">Cita</option>
-                <option value="Pareja">Pareja</option>
-                <option value="Fiesta">Fiesta</option>
-                <option value="Picante">Picante</option>
-                <option value="Profundo">Profundo</option>
-                <option value="Polemico">Polémico</option>
-            </select>
+            <select id="sug-cat"><option value="Aleatorio">Mix</option><option value="Cita">Cita</option><option value="Pareja">Pareja</option><option value="Fiesta">Fiesta</option><option value="Picante">Picante</option><option value="Profundo">Profundo</option><option value="Polemico">Polémico</option></select>
             <textarea id="sug-text" rows="3" placeholder="Escribe tu pregunta..."></textarea>
             <button class="btn-submit" onclick="sendSuggestion()">Enviar</button>
         </div>
@@ -151,15 +184,10 @@
     <div class="modal-overlay" id="streakModal">
         <div class="modal-content" style="border-color: #FF4500;">
             <span class="close-modal" onclick="closeStreakModal()">&times;</span>
-            <i class="fas fa-fire" style="font-size: 3rem; color: #FF4500; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255,69,0,0.4));"></i>
-            <h3 style="color: #FF4500; margin-bottom: 10px;">Racha de Fuego</h3>
-            <p style="margin-bottom: 20px; line-height: 1.6;">
-                Llevas <strong style="color:white; font-size:1.3rem;" id="modal-streak-count">0</strong> días seguidos entrando.
-            </p>
-            <p style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 20px;">
-                ¡Entra mañana para mantener el fuego vivo o volverás a cero!
-            </p>
-            <button class="btn-submit" onclick="closeStreakModal()" style="background: #FF4500; color: white;">¡Entendido!</button>
+            <i class="fas fa-fire" style="font-size: 3rem; color: #FF4500; margin-bottom: 20px;"></i>
+            <h3 style="color: #FF4500;">Racha de Fuego</h3>
+            <p style="margin-bottom: 20px;">Llevas <strong id="modal-streak-count" style="color:white;">0</strong> días seguidos.</p>
+            <button class="btn-submit" onclick="closeStreakModal()" style="background: #FF4500;">¡Entendido!</button>
         </div>
     </div>
 

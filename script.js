@@ -1,4 +1,4 @@
-// CONFIGURACIÓN SUPABASE
+// CONFIGURACIÓN
 const SUPABASE_URL = 'https://zlddmiulbfjhwytfkvlw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpsZGRtaXVsYmZqaHd5dGZrdmx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY0OTU4ODEsImV4cCI6MjA4MjA3MTg4MX0.61pMT7GbYU9ZpWJjZnsBGrF_Lb9jLX0OkIYf1a6k6GY';
 const { createClient } = supabase;
@@ -26,8 +26,7 @@ function playSfx(type) {
         if(navigator.vibrate) navigator.vibrate(5);
     } 
     else if (type === 'swoosh') {
-        osc.type = 'triangle'; 
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        osc.type = 'triangle'; gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
         osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
@@ -41,7 +40,53 @@ function playSfx(type) {
     }
 }
 
-// 1. RACHAS Y MODAL
+// 1. GESTIÓN DE PERFIL (NUEVO)
+function loadProfile() {
+    const name = localStorage.getItem('profile_name') || 'Anónimo';
+    const avatar = localStorage.getItem('profile_avatar') || '🦊';
+    const votesCast = localStorage.getItem('profile_votes') || 0;
+    const streak = localStorage.getItem('streak') || 0;
+
+    document.getElementById('profile-name').value = name;
+    document.getElementById('profile-avatar').innerText = avatar;
+    document.getElementById('stat-streak').innerText = streak;
+    document.getElementById('stat-votes').innerText = votesCast;
+
+    // Calcular nivel simple
+    const level = Math.floor(votesCast / 10) + 1;
+    let title = "Novato";
+    if(level > 5) title = "Juez";
+    if(level > 20) title = "Oráculo";
+    document.getElementById('profile-level').innerText = `Nivel ${level}: ${title}`;
+}
+
+function saveProfile() {
+    const name = document.getElementById('profile-name').value;
+    if(name.trim() === "") return;
+    localStorage.setItem('profile_name', name);
+}
+
+function toggleAvatarEdit() {
+    const selector = document.getElementById('avatar-selector');
+    selector.style.display = selector.style.display === 'none' ? 'grid' : 'none';
+    playSfx('click');
+}
+
+function setAvatar(emoji) {
+    localStorage.setItem('profile_avatar', emoji);
+    document.getElementById('profile-avatar').innerText = emoji;
+    document.getElementById('avatar-selector').style.display = 'none';
+    playSfx('success');
+}
+
+function incrementVoteStat() {
+    let v = parseInt(localStorage.getItem('profile_votes') || 0);
+    v++;
+    localStorage.setItem('profile_votes', v);
+    document.getElementById('stat-votes').innerText = v;
+}
+
+// 2. RACHAS
 function checkStreak() {
     const today = new Date().toISOString().split('T')[0];
     const lastVisit = localStorage.getItem('lastVisit');
@@ -58,46 +103,37 @@ function checkStreak() {
         } else {
             streak = 1; 
         }
-        
         localStorage.setItem('lastVisit', today);
         localStorage.setItem('streak', streak);
     }
 
     const badge = document.getElementById('streak-badge');
     const count = document.getElementById('streak-count');
-    
     if (streak > 0) {
         badge.style.display = 'flex';
         count.innerText = streak;
     }
 }
-
 function openStreakModal() {
-    // Actualizar el número dentro del modal antes de abrir
     document.getElementById('modal-streak-count').innerText = document.getElementById('streak-count').innerText;
     document.getElementById('streakModal').style.display = 'flex';
     playSfx('click');
 }
-function closeStreakModal() {
-    document.getElementById('streakModal').style.display = 'none';
-}
+function closeStreakModal() { document.getElementById('streakModal').style.display = 'none'; }
 
-// 2. ORÁCULO
+// 3. CORE (ORÁCULO, DILEMA, JUICIO)
 async function fetchQuestions() {
     const { data } = await db.from('questions').select('*');
     if(data && data.length > 0) allQuestions = data;
     else allQuestions = [{text: "Bienvenido a Totalkmon.", category: "Inicio"}];
     nextQuestion();
 }
-
 function nextQuestion() {
     let pool = allQuestions;
     if(currentCategory !== 'aleatorio') pool = allQuestions.filter(q => q.category.toLowerCase() === currentCategory.toLowerCase());
     if(pool.length === 0) pool = allQuestions;
-    
     const cardContent = document.querySelector('.card-inner');
     cardContent.style.opacity = '0';
-    
     setTimeout(() => {
         const random = pool[Math.floor(Math.random() * pool.length)];
         document.getElementById('q-text').innerText = random.text;
@@ -105,7 +141,6 @@ function nextQuestion() {
         cardContent.style.opacity = '1';
     }, 150);
 }
-
 function setCategory(cat, btn) {
     playSfx('click');
     currentCategory = cat;
@@ -114,7 +149,6 @@ function setCategory(cat, btn) {
     nextQuestion();
 }
 
-// 3. DILEMA
 async function loadClash() {
     const today = new Date().toISOString().split('T')[0];
     let { data } = await db.from('clashes').select('*').eq('publish_date', today);
@@ -131,7 +165,6 @@ async function loadClash() {
         if(localStorage.getItem('voted_'+c.id)) showResults(c.votes_a, c.votes_b);
     }
 }
-
 async function voteClash(opt) {
     if(!currentClashId || localStorage.getItem('voted_'+currentClashId)) return;
     playSfx('click');
@@ -142,8 +175,8 @@ async function voteClash(opt) {
     showResults(a, b);
     await db.from('clashes').update({ votes_a: a, votes_b: b }).eq('id', currentClashId);
     localStorage.setItem('voted_'+currentClashId, 'true');
+    incrementVoteStat(); // ESTADÍSTICA
 }
-
 function showResults(a, b) {
     let t = a + b;
     let pa = t===0?0:Math.round((a/t)*100), pb = t===0?0:Math.round((b/t)*100);
@@ -151,21 +184,15 @@ function showResults(a, b) {
     document.getElementById('perc-a').innerText = pa+'%'; document.getElementById('perc-b').innerText = pb+'%';
     document.getElementById('clash-section').classList.add('voted');
 }
-
 function shareClash() {
     const total = clashData.va + clashData.vb;
     const winText = clashData.va > clashData.vb ? clashData.a : clashData.b;
     const winPerc = total === 0 ? 0 : Math.round((Math.max(clashData.va, clashData.vb) / total) * 100);
     if (navigator.share) {
-        navigator.share({
-            title: 'Totalkmon', text: `📊 ${winPerc}%: "${winText}". ¿Tú qué dices?`, url: window.location.href
-        });
-    } else {
-        alert("Link copiado: " + window.location.href);
-    }
+        navigator.share({ title: 'Totalkmon', text: `📊 ${winPerc}%: "${winText}". ¿Tú qué dices?`, url: window.location.href });
+    } else { alert("Link copiado."); }
 }
 
-// 4. JUICIO
 async function fetchJudge() {
     const { data } = await db.from('suggestions').select('*').limit(5);
     if (data && data.length > 0) {
@@ -179,7 +206,6 @@ async function fetchJudge() {
         currentJudgeId = null;
     }
 }
-
 async function voteJudgment(val) {
     if(!currentJudgeId) return;
     playSfx('click');
@@ -194,10 +220,11 @@ async function voteJudgment(val) {
     } else {
         await db.from('suggestions').update({ votes: newVotes }).eq('id', currentJudgeId);
     }
+    incrementVoteStat(); // ESTADÍSTICA
     setTimeout(fetchJudge, 200);
 }
 
-// UI Y SUGERENCIAS
+// UI GENERAL
 async function sendSuggestion() {
     playSfx('click');
     const txt = document.getElementById('sug-text').value;
@@ -208,7 +235,6 @@ async function sendSuggestion() {
     closeModal();
     document.getElementById('sug-text').value = "";
 }
-
 function switchTab(t, el) {
     playSfx('click');
     document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
@@ -217,16 +243,16 @@ function switchTab(t, el) {
     document.getElementById('oracle-section').classList.remove('active-section');
     document.getElementById('clash-section').classList.remove('active-section');
     document.getElementById('judgment-section').classList.remove('active-section');
+    document.getElementById('profile-section').classList.remove('active-section'); // NUEVO
     
     if(t === 'oracle') document.getElementById('oracle-section').classList.add('active-section');
     if(t === 'clash') { document.getElementById('clash-section').classList.add('active-section'); loadClash(); }
     if(t === 'judgment') { document.getElementById('judgment-section').classList.add('active-section'); fetchJudge(); }
+    if(t === 'profile') { document.getElementById('profile-section').classList.add('active-section'); loadProfile(); } // NUEVO
 }
-
 function openModal() { document.getElementById('suggestionModal').style.display = 'flex'; }
 function closeModal() { document.getElementById('suggestionModal').style.display = 'none'; }
 
-// Init Particles
 const pc = document.getElementById('particles');
 for(let i=0;i<20;i++){
     let p=document.createElement('div'); p.className='particle';
