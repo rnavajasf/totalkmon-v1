@@ -1,0 +1,16 @@
+{
+  "name": "Totalkmon",
+  "short_name": "Totalkmon",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050a14",
+  "theme_color": "#050a14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
