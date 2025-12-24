@@ -8,6 +8,7 @@
     --red: #FF4757;
     --green: #2ED573;
     --cyan: #00e5ff;
+    --blue: #3742fa; /* Nuevo para Versus */
     --safe-bottom: env(safe-area-inset-bottom);
 }
 
@@ -80,6 +81,15 @@ section { display: none; width: 100%; animation: fadeUp 0.3s ease-out; }
 .mode-option i { font-size: 1.5rem; }
 .mode-option span { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
 .mode-option.selected { background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan); opacity: 1; transform: scale(1.05); }
+
+/* VERSUS MODE */
+.versus-title { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.4; color: #fff; }
+.versus-assignment { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
+.versus-assignment h3 { font-size: 1.5rem; margin-top: 5px; color: var(--gold); }
+.team-a-style { border-color: var(--red) !important; background: rgba(255, 71, 87, 0.1) !important; }
+.team-a-style h3 { color: var(--red) !important; }
+.team-b-style { border-color: var(--blue) !important; background: rgba(55, 66, 250, 0.1) !important; }
+.team-b-style h3 { color: var(--blue) !important; }
 
 /* FIESTA */
 .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }

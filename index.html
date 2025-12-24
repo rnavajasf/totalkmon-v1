@@ -105,12 +105,13 @@
                     <h3>👑 Crear Sala</h3>
                     <div class="gamemode-selector">
                         <div class="mode-option selected" id="mode-classic" onclick="selectGameMode('classic')">
-                            <i class="fas fa-comments"></i>
-                            <span>Clásico</span>
+                            <i class="fas fa-comments"></i><span>Clásico</span>
+                        </div>
+                        <div class="mode-option" id="mode-versus" onclick="selectGameMode('versus')">
+                            <i class="fas fa-fist-raised"></i><span>Versus</span>
                         </div>
                         <div class="mode-option" id="mode-imposter" onclick="selectGameMode('imposter')">
-                            <i class="fas fa-user-secret"></i>
-                            <span>Impostor</span>
+                            <i class="fas fa-user-secret"></i><span>Impostor</span>
                         </div>
                     </div>
                     <button class="btn-submit" onclick="createRoom()">Crear Sala</button>
@@ -138,6 +139,17 @@
                         <div class="card-inner">
                             <span class="category-pill" id="party-cat">Esperando...</span>
                             <p class="question-content" id="party-text">El anfitrión elegirá la pregunta.</p>
+                        </div>
+                    </div>
+
+                    <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);">
+                        <div class="card-inner">
+                            <span class="category-pill" id="versus-topic">TEMA DEL DEBATE</span>
+                            <h2 class="versus-title" id="versus-main-text">Esperando...</h2>
+                            <div class="versus-assignment" id="versus-role-box">
+                                <p style="font-size: 0.8rem; text-transform: uppercase;">Tu misión:</p>
+                                <h3 id="versus-role-text">ESPERANDO ASIGNACIÓN</h3>
+                            </div>
                         </div>
                     </div>
 
