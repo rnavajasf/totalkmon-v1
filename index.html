@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#050a14">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    
     <title>Totalkmon</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
@@ -16,96 +26,129 @@
 
     <header>
         <div class="header-top">
-            <div class="streak-badge"><i class="fas fa-fire"></i> <span id="streak-count">0</span></div>
+            <div class="streak-badge" id="streak-trigger"><i class="fas fa-fire"></i> <span id="streak-count">0</span></div>
+        </div>
+        <div class="logo-container">
+            <svg viewBox="0 0 100 100" fill="none"><path d="M50 95C74.8528 95 95 74.8528 95 50C95 25.1472 74.8528 5 50 5C25.1472 5 5 25.1472 5 50C5 74.8528 25.1472 95 50 95Z" stroke="#FFBF00" stroke-width="2"/><circle cx="50" cy="50" r="9" fill="#FFBF00"/></svg>
         </div>
         <h1>Totalkmon</h1>
     </header>
 
     <main class="main-stage">
         
-        <section id="oracle-section" class="active-section">
+        <section id="section-oracle" class="active-section">
             <div class="topic-slider-container">
                 <div class="topic-slider">
-                    <button class="topic-chip active" onclick="setCategory('Mix', this)">✨ Mix</button>
-                    <button class="topic-chip" onclick="setCategory('Cita', this)">💘 Cita</button>
-                    <button class="topic-chip" onclick="setCategory('Pareja', this)">👩‍❤️‍👨 Pareja</button>
-                    <button class="topic-chip" onclick="setCategory('Fiesta', this)">🎉 Fiesta</button>
-                    <button class="topic-chip" onclick="setCategory('Picante', this)">🔥 Picante</button>
-                    <button class="topic-chip" onclick="setCategory('Profundo', this)">🌌 Profundo</button>
-                    <button class="topic-chip" onclick="setCategory('Polemico', this)">🤬 Polémico</button>
+                    <button class="topic-chip active" data-action="setCategory" data-val="Mix">✨ Mix</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Cita">💘 Cita</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Pareja">👩‍❤️‍👨 Pareja</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Fiesta">🎉 Fiesta</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Picante">🔥 Picante</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Profundo">🌌 Profundo</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Polemico">🤬 Polémico</button>
+                    <button class="topic-chip" data-action="setCategory" data-val="Nostalgia">📼 Nostalgia</button>
                 </div>
             </div>
             <div class="card-container">
-                <div class="card interactive-card" onclick="nextQuestion()">
+                <div class="card interactive-card" data-action="nextQuestion">
                     <div class="card-inner">
                         <span class="category-pill" id="q-cat">Bienvenida</span>
                         <p class="question-content" id="q-text">Cargando...</p>
                         <p class="hint">Toca para siguiente</p>
                     </div>
                 </div>
+                <button class="mini-share-btn" data-action="share" data-val="oracle"><i class="fas fa-camera"></i> Compartir</button>
             </div>
         </section>
 
-        <section id="clash-section">
-            <div class="section-title"><h2>Dilema Diario</h2></div>
+        <section id="section-clash">
+            <div class="section-title"><h2>Dilema Diario</h2><p>La humanidad decide</p></div>
             <div class="clash-wrapper" id="clash-container">
-                <div class="option-btn opt-a" onclick="voteClash('a')"><div class="progress-bar" id="bar-a"></div><span class="opt-text" id="text-a">...</span><span class="opt-percent" id="perc-a">0%</span></div>
+                <div class="option-btn opt-a" data-action="voteClash" data-val="a"><div class="progress-bar" id="bar-a"></div><span class="opt-text" id="text-a">...</span><span class="opt-percent" id="perc-a">0%</span></div>
                 <div class="vs-badge">VS</div>
-                <div class="option-btn opt-b" onclick="voteClash('b')"><div class="progress-bar" id="bar-b"></div><span class="opt-text" id="text-b">...</span><span class="opt-percent" id="perc-b">0%</span></div>
+                <div class="option-btn opt-b" data-action="voteClash" data-val="b"><div class="progress-bar" id="bar-b"></div><span class="opt-text" id="text-b">...</span><span class="opt-percent" id="perc-b">0%</span></div>
+                <button class="share-btn" data-action="share" data-val="clash"><i class="fas fa-camera"></i> Compartir Resultado</button>
             </div>
         </section>
 
-        <section id="party-section">
-            <div class="section-title"><h2>Modo Fiesta</h2></div>
+        <section id="section-party">
+            <div class="section-title"><h2>Modo Fiesta</h2><p>Multijugador</p></div>
             
             <div id="party-lobby">
                 <div class="admin-card">
-                    <h3>Crear Sala</h3>
+                    <h3>👑 Crear Sala</h3>
                     <div class="gamemode-selector">
-                        <div class="mode-option selected" id="mode-classic" onclick="selectGameMode('classic')"><span>Clásico</span></div>
-                        <div class="mode-option" id="mode-imposter" onclick="selectGameMode('imposter')"><span>Impostor</span></div>
+                        <div class="mode-option selected" data-action="selectGameMode" data-val="classic"><i class="fas fa-comments"></i><span>Clásico</span></div>
+                        <div class="mode-option" data-action="selectGameMode" data-val="versus"><i class="fas fa-fist-raised"></i><span>Versus</span></div>
+                        <div class="mode-option" data-action="selectGameMode" data-val="imposter"><i class="fas fa-user-secret"></i><span>Impostor</span></div>
                     </div>
-                    <button class="btn-submit" onclick="createRoom()">Crear Sala</button>
+                    <button class="btn-submit" data-action="createRoom">Crear Sala</button>
                 </div>
                 <div class="divider"><span>O</span></div>
-                <div class="admin-card">
-                    <input type="text" id="join-code" placeholder="CÓDIGO" maxlength="4" style="text-align:center; text-transform:uppercase;">
-                    <button class="btn-submit" onclick="joinRoom()">Unirse</button>
+                <div class="admin-card" style="border-color: rgba(255,255,255,0.1);">
+                    <h3>🚀 Unirse</h3>
+                    <input type="text" id="join-code" placeholder="CÓDIGO (4 LETRAS)" maxlength="4" style="text-align:center; letter-spacing: 5px; text-transform:uppercase; font-size: 1.2rem;">
+                    <button class="btn-submit" data-action="joinRoom" style="background: transparent; border: 1px solid var(--gold); color: var(--gold);">Entrar</button>
                 </div>
             </div>
 
             <div id="party-active" style="display: none;">
-                <div class="room-header"><span class="room-code" id="display-room-code">----</span><button class="exit-room-btn" onclick="exitRoom()">SALIR</button></div>
+                <div class="room-header"><span class="room-label">SALA:</span><span class="room-code" id="display-room-code">----</span><button class="exit-room-btn" data-action="exitRoom"><i class="fas fa-sign-out-alt"></i></button></div>
                 
-                <div class="card-container">
+                <div class="card-container" style="min-height: 300px;">
                     <div class="card party-card" id="party-card-classic"><div class="card-inner"><span class="category-pill" id="party-cat">...</span><p class="question-content" id="party-text">Esperando...</p></div></div>
-                    
-                    <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;"><div class="card-inner"><i class="fas fa-fingerprint" style="font-size:3rem; opacity:0.5;"></i><span class="category-pill">SECRETO</span><p class="question-content" id="imposter-role-text" style="filter: blur(10px);">???</p><p class="hint">Toca para revelar</p></div></div>
+                    <div class="card party-card" id="party-card-versus" style="display: none; border-color: var(--gold);"><div class="card-inner"><span class="category-pill" id="versus-topic">VERSUS</span><h2 class="versus-title" id="versus-main-text">...</h2><div class="versus-assignment" id="versus-role-box"><p style="font-size:0.8rem;">TU MISIÓN:</p><h3 id="versus-role-text">ASIGNANDO...</h3></div></div></div>
+                    <div class="card party-card" id="party-card-imposter" style="display: none; border-color: #ff0055;"><div class="card-inner"><i class="fas fa-fingerprint" style="font-size:3rem; opacity:0.5;"></i><span class="category-pill">SECRETO</span><p class="question-content" id="imposter-role-text" style="filter: blur(8px);">???</p><p class="hint">Toca para revelar</p></div></div>
                 </div>
 
                 <div id="host-controls" style="display: none; width: 100%; margin-top: 20px;">
-                    <button class="btn-submit" onclick="partyNextRound()" style="background: var(--cyan); color: #000;">Siguiente Ronda</button>
+                    <button class="btn-submit" data-action="partyNextRound" style="height: 60px; font-size: 1.2rem; background: var(--cyan); color: #000;"><i class="fas fa-play"></i> Siguiente</button>
                 </div>
-                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p>Esperando al anfitrión...</p></div>
+                <div id="guest-controls" style="display: none; text-align: center; margin-top: 20px; opacity: 0.6;"><p class="pulse-text"><i class="fas fa-link"></i> Sincronizado</p></div>
             </div>
         </section>
 
-        <section id="profile-section">
+        <section id="section-profile">
             <div class="section-title"><h2>Perfil</h2></div>
             <div class="profile-card">
-                <div class="avatar-circle" id="profile-avatar">🦊</div>
-                <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Nombre" onblur="saveProfile()">
+                <div class="avatar-wrapper" data-action="toggleAvatarEdit"><div class="avatar-circle" id="profile-avatar">🦊</div></div>
+                <input type="text" id="profile-name" class="profile-name-input" placeholder="Tu Apodo" maxlength="12">
+            </div>
+            <div id="avatar-selector" class="avatar-grid" style="display: none;">
+                <div class="av-option" data-action="setAvatar" data-val="🦊">🦊</div><div class="av-option" data-action="setAvatar" data-val="👽">👽</div>
+                <div class="av-option" data-action="setAvatar" data-val="🤖">🤖</div><div class="av-option" data-action="setAvatar" data-val="🦁">🦁</div>
             </div>
             <div class="stats-grid"><div class="stat-box"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Racha</span></div><div class="stat-box"><span class="stat-value" id="stat-votes">0</span><span class="stat-label">Votos</span></div></div>
+            <button class="share-btn" data-action="share" data-val="profile" style="margin-top:20px; display:flex;"><i class="fas fa-id-card"></i> Compartir Perfil</button>
         </section>
+
+        <section id="section-judgment">
+            <div class="section-title"><h2>Juicio</h2></div>
+            <div class="card-container"><div class="card judge-card"><div class="judge-badge">Purgatorio</div><p class="question-content" id="judge-text">Cargando...</p><span id="judge-cat" class="meta-cat">...</span>
+            <div class="judge-actions">
+                <button class="btn-judge btn-reject" data-action="voteJudgment" data-val="-1"><i class="fas fa-times"></i></button>
+                <button class="btn-judge btn-approve" data-action="voteJudgment" data-val="1"><i class="fas fa-check"></i></button>
+            </div></div></div>
+        </section>
+        
+        <section id="section-admin"><div class="admin-card"><h3>God Mode</h3><button class="mini-share-btn" data-action="switchTab" data-val="profile">Salir</button></div></section>
     </main>
 
     <nav class="bottom-dock">
-        <button class="dock-item active" onclick="switchTab('oracle', this)"><i class="fas fa-eye"></i></button>
-        <button class="dock-item" onclick="switchTab('clash', this)"><i class="fas fa-balance-scale-right"></i></button>
-        <button class="dock-item" onclick="switchTab('party', this)"><i class="fas fa-users"></i></button>
-        <button class="dock-item" onclick="switchTab('profile', this)"><i class="fas fa-user"></i></button>
+        <button class="dock-item active" data-action="switchTab" data-val="oracle"><i class="fas fa-eye"></i><span>Oráculo</span></button>
+        <button class="dock-item" data-action="switchTab" data-val="clash"><i class="fas fa-balance-scale-right"></i><span>Dilema</span></button>
+        <div class="dock-fab" data-action="openModal"><i class="fas fa-plus"></i></div>
+        <button class="dock-item" data-action="switchTab" data-val="party"><i class="fas fa-users"></i><span>Fiesta</span></button>
+        <button class="dock-item" data-action="switchTab" data-val="profile"><i class="fas fa-user"></i><span>Perfil</span></button>
     </nav>
+
+    <div class="modal-overlay" id="suggestionModal">
+        <div class="modal-content"><span class="close-modal" data-action="closeModal">&times;</span><h3>Sugerir</h3><textarea id="sug-text" rows="3"></textarea><button class="btn-submit" data-action="sendSuggestion">Enviar</button></div>
+    </div>
+    <div class="modal-overlay" id="streakModal">
+        <div class="modal-content"><span class="close-modal" data-action="closeStreakModal">&times;</span><h3>Racha</h3><p>Días: <strong id="modal-streak-count">0</strong></p><button class="btn-submit" data-action="closeStreakModal">OK</button></div>
+    </div>
+    <div id="capture-stage"><div class="capture-content" id="capture-text"></div></div>
 
     <script src="script.js"></script>
 </body>
